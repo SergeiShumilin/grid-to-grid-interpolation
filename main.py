@@ -3,6 +3,7 @@ from matplotlib.tri import Triangulation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
+from algorithms import knn
 
 
 def create_half_cylinder(n_points=3, filename='grid', create_dat=True, plot_pyplot=False):
@@ -45,7 +46,9 @@ def create_half_cylinder(n_points=3, filename='grid', create_dat=True, plot_pypl
     return mgrid
 
 
-grid1 = create_half_cylinder(3, 'attempt.dat')
-grid2 = create_half_cylinder(10, 'attempt2.dat')
+grid1 = create_half_cylinder(5, 'original_grid.dat')
+grid2 = create_half_cylinder(10, 'new_grid.dat')
 
+knn.interpolate_with_KNN(grid1, grid2)
 
+tecplot.print_tecplot(grid2, 'result_grid.dat')
