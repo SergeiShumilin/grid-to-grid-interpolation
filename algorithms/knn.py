@@ -2,9 +2,10 @@
 from numpy import inf
 from sklearn.neighbors import KNeighborsRegressor
 from geom import basic
+from algorithms.avl_tree import AVLTree, AVLTreeNode
 
 
-def my_squared_knn(old_grid, new_grid):
+def my_squared_knn(old_grid, new_grid) -> list:
     """My implementation of ordinary knn with squared search.
     The underlying idea is similar to that of KNN method.
     We assume that original grid's nodes represent a cloud of points.
@@ -29,7 +30,22 @@ def my_squared_knn(old_grid, new_grid):
 
 
 def my_nlogn_knn(old_grid, new_grid):
-    """Implementation of knn with binary search of the neighbour."""
+    """Implementation of knn with binary search of the neighbour using AVL tree."""
+    res = list()
+
+    for new_n in new_grid.Nodes:
+        neighbour = search_of_node_in_avl_tree(new_n, old_grid)
+        res.append(neighbour.value)
+
+    return res
+
+
+def search_of_node_in_avl_tree(new_n, old_grid):
+    avl = AVLTree()
+
+    for node in old_grid.Nodes:
+        avl.insert(node)
+
 
 
 def sklearn_knn(old_grid, new_grid):

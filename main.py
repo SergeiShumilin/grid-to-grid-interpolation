@@ -1,4 +1,4 @@
-from triangular_grid_merge import grid, node, tecplot, face
+from grid import grid, node, tecplot, face
 from matplotlib.tri import Triangulation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
