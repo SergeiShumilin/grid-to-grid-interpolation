@@ -31,21 +31,20 @@ def my_squared_knn(old_grid, new_grid) -> list:
 
 def my_nlogn_knn(old_grid, new_grid):
     """Implementation of knn with binary search of the neighbour using AVL tree."""
-    res = list()
-
-    for new_n in new_grid.Nodes:
-        neighbour = search_of_node_in_avl_tree(new_n, old_grid)
-        res.append(neighbour.value)
-
-    return res
-
-
-def search_of_node_in_avl_tree(new_n, old_grid):
     avl = AVLTree()
+    res = list()
 
     for node in old_grid.Nodes:
         avl.insert(node)
+    print('уже создали дерево')
+    for new_n in new_grid.Nodes:
+        neighbour = avl.find(new_n, return_nearest=True)
+        if not neighbour:
+            print('!')
+            print(new_n.x, new_n.y, new_n.z)
+        res.append(neighbour.key.value)
 
+    return res
 
 
 def sklearn_knn(old_grid, new_grid):
@@ -59,9 +58,8 @@ def sklearn_knn(old_grid, new_grid):
 
 
 def interpolate(old_grid, new_grid):
-    """Relocate values from the old grid to the new one.
-    """
+    """Relocate values from the old grid to the new one."""
     old_grid.relocate_values_from_faces_to_nodes()
-    predicted = my_squared_knn(old_grid, new_grid)
+    predicted = my_nlogn_knn(old_grid, new_grid)
     new_grid.set_node_values(predicted)
     new_grid.relocate_values_from_nodes_to_faces()

@@ -1,4 +1,7 @@
 from grid.node import Node
+from numpy import inf
+from geom.basic import euclidian_distance
+
 
 class AVLTreeNode:
     def __init__(self, key=None):
@@ -23,11 +26,11 @@ class AVLTree:
         if not root:
             return AVLTreeNode(key)
 
-        if key.coordinates < root.key.coordinates:
+        if key.coordinates() < root.key.coordinates():
             left_sub_root = self._insert(root.left, key)
             root.left = left_sub_root
             left_sub_root.parent = root
-        elif key.coordinates > root.key.coordinates:
+        elif key.coordinates() > root.key.coordinates():
             right_sub_root = self._insert(root.right, key)
             root.right = right_sub_root
             right_sub_root.parent = root
@@ -37,8 +40,36 @@ class AVLTree:
         root.height = max(self._get_height(root.left), self._get_height(root.right)) + 1
         root.balance = self._get_height(root.left) - self._get_height(root.right)
 
-    def find(self, coordinates: tuple) -> Node:
-        pass
+        return self.rebalance(root)
+
+    def find(self, key, return_nearest=False):
+        """Find the key in the tree.
+        :param key: Node the node to find
+        :param return_nearest: returns the nearest of the nodes by euclidean distance."""
+        nbr_dist = [None, inf]
+        found = self._find(self.root, key, nbr_dist)
+        if return_nearest:
+            return nbr_dist[0]
+        else:
+            return found
+
+    def _find(self, root: AVLTreeNode, key: Node, nbr_dist) -> (AVLTreeNode, None):
+        """Find key in the tree.
+        :param nbr_dist: saves nearest encountered node and distance to it."""
+        if not root:
+            return None
+
+        d = euclidian_distance(key, root.key)
+        if d < nbr_dist[1]:
+            nbr_dist[1] = d
+            nbr_dist[0] = root
+
+        if key.coordinates() < root.key.coordinates():
+            return self._find(root.left, key, nbr_dist)
+        elif key.coordinates() > root.key.coordinates():
+            return self._find(root.right, key, nbr_dist)
+        else:
+            return root
 
     @staticmethod
     def _get_height(root: AVLTreeNode) -> int:
@@ -56,7 +87,7 @@ class AVLTree:
 
         elif root.balance == -2:
             if root.right.balance > 0:  # R-L case
-                root.left = self.rotate_right(root.left)
+                root.right = self.rotate_right(root.right)
                 return self.rotate_left(root)
             else:  # R-R case
                 return self.rotate_left(root)

@@ -4,7 +4,7 @@
 class Node:
     __doc__ = "class describing node"
 
-    def __init__(self, x=None, y=None, z=None):
+    def __init__(self, x=None, y=None, z=None, value=None):
         """
         Construct node.
         :param id: node's id in the grid.
@@ -14,7 +14,7 @@ class Node:
         self.y = y
         self.z = z
 
-        self.value = None
+        self.value = value
         self.faces = list()
         self.edges = list()
 
