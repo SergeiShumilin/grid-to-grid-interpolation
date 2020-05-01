@@ -38,11 +38,24 @@ def my_nlogn_knn(old_grid, new_grid):
         avl.insert(node)
     print('уже создали дерево')
     for new_n in new_grid.Nodes:
+        print('ищем узел')
         neighbour = avl.find(new_n, return_nearest=True)
-        if not neighbour:
-            print('!')
-            print(new_n.x, new_n.y, new_n.z)
         res.append(neighbour.key.value)
+
+        neighbour2 = None
+        dist = inf
+        for old_n in old_grid.Nodes:
+            new_dist = basic.euclidian_distance(new_n, old_n)
+            if new_dist < dist:
+                neighbour2 = old_n
+                dist = new_dist
+
+        if neighbour.key is not neighbour2:
+            print('Они не совпали')
+            print(new_n.coordinates())
+            print(neighbour.key.coordinates())
+            print(neighbour2.coordinates())
+            exit(1)
 
     return res
 

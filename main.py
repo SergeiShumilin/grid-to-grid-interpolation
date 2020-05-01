@@ -16,7 +16,7 @@ def create_half_cylinder(n_points=3, filename='grid', create_dat=True, plot_pypl
 
     :return Grid obj."""
     u = np.linspace(0, np.pi, num=n_points, endpoint=True)
-    v = np.linspace(0, 3, num=10, endpoint=True)
+    v = np.linspace(0, 3, num=4, endpoint=True)
 
     u, zs = np.meshgrid(u, v)
 
@@ -46,9 +46,9 @@ def create_half_cylinder(n_points=3, filename='grid', create_dat=True, plot_pypl
     return mgrid
 
 
-grid1 = create_half_cylinder(20, 'original_grid_my_nlogn.dat')
-grid2 = create_half_cylinder(40, 'new_grid_nlogn.dat')
+grid1 = create_half_cylinder(2, 'original_grid_my_nlogn.dat')
+grid2 = create_half_cylinder(5, 'new_grid_nlogn.dat')
 
 knn.interpolate(grid1, grid2)
 
-tecplot.print_tecplot(grid2, 'result_grid_my_nlogn.dat')
+#tecplot.print_tecplot(grid2, 'result_grid_square.dat')
