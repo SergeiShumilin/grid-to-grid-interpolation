@@ -2,6 +2,7 @@ from grid.node import Node
 from numpy import inf
 from geom.basic import euclidian_distance
 
+NODE_COMPARISON_ACCURACY = 10e-18
 
 class AVLTreeNode:
     def __init__(self, key=None):
@@ -40,7 +41,7 @@ class AVLTree:
         root.height = max(self._get_height(root.left), self._get_height(root.right)) + 1
         root.balance = self._get_height(root.left) - self._get_height(root.right)
 
-        return self.rebalance(root)
+        return root
 
     def find(self, key, return_nearest=False):
         """Find the key in the tree.
@@ -64,12 +65,25 @@ class AVLTree:
             nbr_dist[1] = d
             nbr_dist[0] = root
 
-        if key.coordinates() < root.key.coordinates():
-            return self._find(root.left, key, nbr_dist)
-        elif key.coordinates() > root.key.coordinates():
-            return self._find(root.right, key, nbr_dist)
-        else:
+        if d < NODE_COMPARISON_ACCURACY:
             return root
+
+        if root.left:
+            dist_to_left = euclidian_distance(key, root.left.key)
+        if root.right:
+            dist_to_right = euclidian_distance(key, root.right.key)
+
+        if root.left and root.right:
+            if dist_to_left < dist_to_right:
+                return self._find(root.left, key, nbr_dist)
+            else:
+                return self._find(root.right, key, nbr_dist)
+        elif not root.left and not root.right:
+            return None  # todo это только если ищем ближайшего.
+        elif root.left and not root.right:
+            return self._find(root.left, key, nbr_dist)
+        elif root.right and not root.left:
+            return self._find(root.right, key, nbr_dist)
 
     @staticmethod
     def _get_height(root: AVLTreeNode) -> int:
