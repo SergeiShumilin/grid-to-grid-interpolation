@@ -17,3 +17,12 @@ class Face:
         self.edges = list()
 
         self.V = value
+
+        self.T = None
+        self.Hw = None
+        self.Hi = None
+        self.HTC = None
+        self.Beta = None
+        self.TauX = None
+        self.TauY = None
+        self.TauZ = None

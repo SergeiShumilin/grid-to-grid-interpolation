@@ -312,11 +312,17 @@ class Grid:
         for n in self.Nodes:
             value = 0
             n_faces = len(n.faces)
+            t = 0
+            hw = 0
 
             for f in n.faces:
                 value += f.V
+                t += f.T
+                hw += f.Hw
 
             n.value = value / n_faces
+            n.T = t
+            n.Hw = hw
 
     def relocate_values_from_nodes_to_faces(self):
         """Set values in faces as mean of the neighbour nodes."""

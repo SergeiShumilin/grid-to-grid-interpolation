@@ -15,6 +15,8 @@ class Node:
         self.z = z
 
         self.value = value
+        self.T = None
+        self.Hw = None
         self.faces = list()
         self.edges = list()
 

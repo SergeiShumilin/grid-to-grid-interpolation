@@ -1,6 +1,5 @@
 """This algorithm uses MO's KNN idea to relocate face's values from one grid to another."""
 from numpy import inf
-from sklearn.neighbors import KNeighborsRegressor
 from geom import basic
 from algorithms.avl_tree import AVLTree, AVLTreeNode
 
@@ -60,19 +59,9 @@ def my_nlogn_knn(old_grid, new_grid):
     return res
 
 
-def sklearn_knn(old_grid, new_grid):
-    """Implementation with sklearn's KNN."""
-    X_train = old_grid.coordinates_to_array()
-    y_train = old_grid.values_from_nodes_to_array()
-    X_test = new_grid.coordinates_to_array()
-    knn = KNeighborsRegressor(n_neighbors=1, weights='distance')
-    knn.fit(X_train, y_train)
-    return knn.predict(X_test)
-
-
 def interpolate(old_grid, new_grid):
     """Relocate values from the old grid to the new one."""
     old_grid.relocate_values_from_faces_to_nodes()
-    predicted = my_nlogn_knn(old_grid, new_grid)
+    predicted = my_squared_knn(old_grid, new_grid)
     new_grid.set_node_values(predicted)
     new_grid.relocate_values_from_nodes_to_faces()
