@@ -13,8 +13,7 @@ EPS = 10e-5
 NUMBER_OF_LINES_BETWEEN_ELEMENTS_COUNT_AND_VALUES = 4
 LINE_THE_IDS_START_IN_TECPLOT_FILE = 11
 
-
-def print_tecplot(grid, filename):
+def print_tecplot(grid, filename, merge=False):
     """
     Write grid containing multiple zones to the file.
 
@@ -26,7 +25,11 @@ def print_tecplot(grid, filename):
     I.e. continuing numbering through the grid.
     """
     print_tecplot_header(filename)
-    print_zones(grid, filename)
+
+    if merge:
+        print_merged_grid(grid, filename)
+    else:
+        print_zones(grid, filename)
 
 
 def print_zones(grid, filename):
@@ -84,7 +87,7 @@ def read_tecplot(grid, filename):
     # Find and remember all ELEMENTS words in the file.
     # They design a start of zone.
     for i, line in enumerate(lines):
-        if line.find('ELEMENTS=') != -1:
+        if line.find('ELEMENTS =') != -1:
             faces_count.append(number_of_faces(line))
 
             # +3 is the correction to start from the line
@@ -232,7 +235,7 @@ def parce_nodes_and_faces(lines):
 
     for line in lines[LINE_THE_IDS_START_IN_TECPLOT_FILE:]:
         f = Face()
-        ids = line.split(' ')
+        ids = line.split(' ')[:-1]
         ids = list(map(int, ids))
         f.nodes_ids = ids
         faces.append(f)

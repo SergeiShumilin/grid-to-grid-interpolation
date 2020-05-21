@@ -90,6 +90,9 @@ def create_half_cylinder(vertical_points=3, horizontal_points=5, filename='grid'
 # plt.legend()
 # plt.show()
 
-grid = grid.Grid()
-tecplot_crystal.read_tecplot(grid, 'wing_10.dat')
-tecplot_crystal.print_tecplot(grid, 'ex.dat')
+grid1 = grid.Grid()
+grid2 = grid.Grid()
+tecplot_crystal.read_tecplot(grid1, 'wing_10_tm12_0120000000 (1).dat')
+tecplot_crystal.read_tecplot(grid2, 'wing_10_tm12_0120000000 (1).dat')
+kdtree.interpolate(grid1, grid2)
+tecplot_crystal.print_tecplot(grid2, 'ex.dat')

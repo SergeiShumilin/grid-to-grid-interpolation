@@ -289,8 +289,6 @@ class Grid:
 
         Fills all faces' values with face's id.
         """
-        self.coordinates_data = np.array([x, y, z]).T
-
         for x, y, z in zip(x, y, z):
             self.Nodes.append(Node(x, y, z))
 
@@ -306,32 +304,62 @@ class Grid:
 
         self.init_zone()
 
-    def relocate_values_from_faces_to_nodes(self):
+    def relocate_values_from_faces_to_nodes(self, value='value'):
         """First use the simplest algrithm.
         The value in the node is mean of values in the adjasent faces."""
-        for n in self.Nodes:
-            value = 0
-            n_faces = len(n.faces)
-            t = 0
-            hw = 0
+        if value == 'value':
+            for n in self.Nodes:
+                n_faces = len(n.faces)
+                if n_faces == 0:
+                    print('lll')
+                value = 0
+                for f in n.faces:
+                    value += f.V
+                n.value = value / n_faces
 
-            for f in n.faces:
-                value += f.V
-                t += f.T
-                hw += f.Hw
+        elif value == 'T':
+            for n in self.Nodes:
+                n_faces = len(n.faces)
+                t = 0
+                for f in n.faces:
+                    t += f.T
+                n.T = t / n_faces
 
-            n.value = value / n_faces
-            n.T = t
-            n.Hw = hw
+        elif value == 'Hw':
+            for n in self.Nodes:
+                n_faces = len(n.faces)
+                hw = 0
+                for f in n.faces:
+                    hw += f.Hw
+                n.Hw = hw / n_faces
 
-    def relocate_values_from_nodes_to_faces(self):
+    def relocate_values_from_nodes_to_faces(self, value='value'):
         """Set values in faces as mean of the neighbour nodes."""
-        for f in self.Faces:
-            f.V = (f.nodes[0].value + f.nodes[1].value + f.nodes[2].value) / 3.0
+        if value == 'value':
+            for f in self.Faces:
+                f.V = (f.nodes[0].value + f.nodes[1].value + f.nodes[2].value) / 3.0
+        elif value == 'T':
+            for f in self.Faces:
+                f.T = (f.nodes[0].T + f.nodes[1].T + f.nodes[2].T) / 3.0
+        elif value == 'Hw':
+            for f in self.Faces:
+                f.Hw = (f.nodes[0].Hw + f.nodes[1].Hw + f.nodes[2].Hw) / 3.0
+        else:
+            raise ValueError('Wrong parameter')
 
-    def coordinates_to_array(self):
-        """Return (n_points, 3) array of coordinates of nodes."""
-        return self.coordinates_data
+    def set_node_values(self, new_values, value='value'):
+        """Set nodes' values nodewise."""
+        if value == 'value':
+            for n, new_value in zip(self.Nodes, new_values):
+                n.value = new_value
+        elif value == 'T':
+            for n, new_value in zip(self.Nodes, new_values):
+                n.T = new_value
+        elif value == 'Hw':
+            for n, new_value in zip(self.Nodes, new_values):
+                n.Hw = new_value
+        else:
+            raise ValueError('Wrong parameter')
 
     def values_from_nodes_to_array(self):
         """Return nodes' values as an array."""
@@ -341,7 +369,13 @@ class Grid:
 
         return np.array(res)
 
-    def set_node_values(self, new_values):
-        """Set nodes' values nodewise."""
-        for n, new_value in zip(self.Nodes, new_values):
-            n.value = new_value
+    def return_coordinates_as_a_ndim_array(self):
+        """Return (n_points, 3) array of coordinates of nodes."""
+        x, y, z = list(), list(), list()
+
+        for n in self.Nodes:
+            x.append(n.x)
+            y.append(n.y)
+            z.append(n.z)
+
+        return np.array([x, y, z]).T
