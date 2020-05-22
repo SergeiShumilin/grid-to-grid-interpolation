@@ -2,6 +2,22 @@ from algorithms.avl_tree import AVLTree
 from grid.node import Node
 
 
+def test_comparing_of_nodes():
+    n1 = Node(0, 0, 0, 1)
+    n2 = Node(1, 0, 0, 2)
+    n3 = Node(10e-18, 0, 0)
+    n4 = Node(10e-17, 0, 0)
+    n5 = Node(0, 10e-18, 0)
+    n6 = Node(0, 10e-17, 0)
+    n7 = Node(0, 0, 10e-18)
+    n8 = Node(0, 0, 10e-17)
+    assert AVLTree.is_node_less(n1, n2), 'Wrong node comparison'
+    assert AVLTree.is_node_less(n3, n4), 'Wrong node comparison'
+    assert AVLTree.is_node_less(n5, n6), 'Wrong node comparison'
+    assert AVLTree.is_node_less(n7, n8), 'Wrong node comparison'
+    print('Node comparison OK')
+
+
 def test_avl():
     avl = AVLTree()
 
@@ -17,10 +33,8 @@ def test_avl():
     for n in nodes:
         avl.insert(n)
 
-    assert avl.find(n5).key.value == 5, 'Wrong node found'
+    assert avl.find(n5).value == 5, 'Wrong node found'
     assert not avl.find(n6), 'Wrong node found'
-    assert avl.find(n5, return_nearest=True).key.value == 5, 'Wrong nearest neighbour found (search for itself)'
-    assert avl.find(n6, return_nearest=True).key.value == 5, 'Wrong nearest neighbour found'
     print('Test 1 OK')
 
 
@@ -33,21 +47,14 @@ def test2():
     n4 = Node(1, 1, 0, 4)
     n5 = Node(1, -1, 0.000000000000001, 5)
     n6 = Node(1, -1, 0.0000000000000001, 6)
-    n7 = Node(-1, 0, 0.0000000000000001, 7)
 
     nodes = [n1, n2, n3, n4, n5]
 
     for n in nodes:
         avl.insert(n)
 
-    assert avl.find(n5).key.value == 5, 'Wrong node found'
+    assert avl.find(n5).value == 5, 'Wrong node found'
     assert not avl.find(n6), 'Wrong node found'
-    assert avl.find(n5, return_nearest=True).key.value == 5, 'Wrong nearest neighbour found (search for itself)'
-    assert avl.find(n6, return_nearest=True).key.value == 5, 'Wrong nearest neighbour found'
-    assert avl.find(n1, return_nearest=True).key.value == 1, 'Wrong nearest neighbour found'
-    assert avl.find(n3, return_nearest=True).key.value == 3, 'Wrong nearest neighbour found'
-    assert avl.find(n6, return_nearest=True).key.value == 5, 'Wrong nearest neighbour found'
-    assert avl.find(n7, return_nearest=True).key.value == 3, 'Wrong nearest neighbour found'
     print('Test 2 OK')
 
 
@@ -69,13 +76,17 @@ def test3():
     for n in nodes:
         avl.insert(n)
 
-    assert avl.find(n7, return_nearest=True).key == n3, 'Wrong nearest neighbour found. test3.'
-    assert avl.find(n8, return_nearest=True).key == n4, 'Wrong nearest neighbour found. test3.'
-    assert avl.find(n9, return_nearest=True).key == n1, 'Wrong nearest neighbour found. test3.'
+    assert not avl.find(n8), 'Wrong nearest neighbour found. test3.'
+    assert not avl.find(n9), 'Wrong nearest neighbour found. test3.'
     print('Test 3 OK')
 
 
-if __name__ == '__main__':
+def test_all():
+    test_comparing_of_nodes()
     test_avl()
     test2()
     test3()
+
+
+if __name__ == '__main__':
+    test_all()

@@ -34,7 +34,11 @@ def interpolate_(old_grid, new_grid):
 def interpolate(old_grid, new_grid):
     """Interpolate grids using K-D tree."""
     old_grid.relocate_values_from_faces_to_nodes(value='T')
+    print('значения перемещены из граней в узлы')
     predicted = interpolate_(old_grid, new_grid)
+    print('произведена интерполяция')
     new_grid.set_node_values(predicted, value='T')
+    print('полученные значения перенесены в узлы')
     del predicted
     new_grid.relocate_values_from_nodes_to_faces(value='T')
+    print('значения перемещены из узлов в грани')

@@ -1,8 +1,7 @@
 from grid.node import Node
-from numpy import inf
-from geom.basic import euclidian_distance
 
-NODE_COMPARISON_ACCURACY = 10e-18
+NODE_COMPARE_ACCURACY = 10e-18
+
 
 class AVLTreeNode:
     def __init__(self, key=None):
@@ -27,63 +26,45 @@ class AVLTree:
         if not root:
             return AVLTreeNode(key)
 
-        if key.coordinates() < root.key.coordinates():
+        if self.is_node_less(key, root.key):
             left_sub_root = self._insert(root.left, key)
             root.left = left_sub_root
             left_sub_root.parent = root
-        elif key.coordinates() > root.key.coordinates():
+        elif self.is_node_less(root.key, key):
             right_sub_root = self._insert(root.right, key)
             root.right = right_sub_root
             right_sub_root.parent = root
         else:
+            print(key.coordinates())
+            print(root.key.coordinates())
+
             raise ValueError('The tree cannot contain identical keys')
 
         root.height = max(self._get_height(root.left), self._get_height(root.right)) + 1
         root.balance = self._get_height(root.left) - self._get_height(root.right)
 
-        return root
+        return self.rebalance(root)
 
-    def find(self, key, return_nearest=False):
+    def find(self, key):
         """Find the key in the tree.
-        :param key: Node the node to find
-        :param return_nearest: returns the nearest of the nodes by euclidean distance."""
-        nbr_dist = [None, inf]
-        found = self._find(self.root, key, nbr_dist)
-        if return_nearest:
-            return nbr_dist[0]
+        :param key: Node the node to find"""
+        found = self._find(self.root, key)
+        if not found:
+            return None
         else:
-            return found
+            return found.key
 
-    def _find(self, root: AVLTreeNode, key: Node, nbr_dist) -> (AVLTreeNode, None):
-        """Find key in the tree.
-        :param nbr_dist: saves nearest encountered node and distance to it."""
+    def _find(self, root: AVLTreeNode, key: Node) -> (AVLTreeNode, None):
+        """Find key in the tree."""
         if not root:
             return None
 
-        d = euclidian_distance(key, root.key)
-        if d < nbr_dist[1]:
-            nbr_dist[1] = d
-            nbr_dist[0] = root
-
-        if d < NODE_COMPARISON_ACCURACY:
+        if self.is_node_less(key, root.key):
+            return self._find(root.left, key)
+        elif self.is_node_less(root.key, key):
+            return self._find(root.right, key)
+        else:
             return root
-
-        if root.left:
-            dist_to_left = euclidian_distance(key, root.left.key)
-        if root.right:
-            dist_to_right = euclidian_distance(key, root.right.key)
-
-        if root.left and root.right:
-            if dist_to_left < dist_to_right:
-                return self._find(root.left, key, nbr_dist)
-            else:
-                return self._find(root.right, key, nbr_dist)
-        elif not root.left and not root.right:
-            return None  # todo это только если ищем ближайшего.
-        elif root.left and not root.right:
-            return self._find(root.left, key, nbr_dist)
-        elif root.right and not root.left:
-            return self._find(root.right, key, nbr_dist)
 
     @staticmethod
     def _get_height(root: AVLTreeNode) -> int:
@@ -157,3 +138,26 @@ class AVLTree:
         pivot.height = max(self._get_height(pivot.left), self._get_height(pivot.right)) + 1
         pivot.balance = self._get_height(pivot.left) - self._get_height(pivot.right)
         return pivot
+
+    @staticmethod
+    def is_node_less(n1: Node, n2: Node) -> bool:
+        """Is n1 < n2 coordinate-wise."""
+        if abs(n1.x - n2.x) > NODE_COMPARE_ACCURACY:
+            if n1.x < n2.x:
+                return True
+            else:
+                return False
+        else:
+            if abs(n1.y - n2.y) > NODE_COMPARE_ACCURACY:
+                if n1.y < n2.y:
+                    return True
+                else:
+                    return False
+            else:
+                if abs(n1.z - n2.z) > NODE_COMPARE_ACCURACY:
+                    if n1.z < n2.z:
+                        return True
+                    else:
+                        return False
+                else:
+                    return False

@@ -21,4 +21,4 @@ class Node:
         self.edges = list()
 
     def coordinates(self) -> tuple:
-        return (self.x, self.y, self.z)
+        return self.x, self.y, self.z

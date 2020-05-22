@@ -5,6 +5,7 @@ from .face import Face
 from .zone import Zone
 from math import fabs
 import numpy as np
+from algorithms.avl_tree import AVLTree
 
 
 class Grid:
@@ -18,6 +19,7 @@ class Grid:
         self.Edges = list()
         self.Nodes = list()
         self.Zones = list()
+        self.avl = AVLTree()
 
     def init(self, xn, yn, x, y):
         """
@@ -263,21 +265,19 @@ class Grid:
         """
         return 2 * (xn - 1) * (yn - 1)
 
-    def is_edge_present(self, n1, n2):
+    @staticmethod
+    def is_edge_present(n1, n2):
         """
-        Whether the `grid.Edges` contains the edge with nodes n1 and n2.
+        Whether the `grid.Edges` contains the edge connecting nodes n1 and n2.
         :param n1: node 1.
         :param n2: node 2.
         :return: id of the edge if present and None if not.
         """
-        for edge in self.Edges:
-
-            if len(edge.nodes) > 0:
-                cond1 = edge.nodes[0] == n1 and edge.nodes[1] == n2
-                cond2 = edge.nodes[0] == n2 and edge.nodes[1] == n1
-                if cond1 or cond2:
-                    return edge
-        return None
+        for edge in n1.edges:
+            if edge.nodes[0] == n2 or edge.nodes[1] == n2:
+                return edge
+            else:
+                return None
 
     def set_nodes_and_faces(self, x, y, z, triangles):
         """
@@ -310,8 +310,6 @@ class Grid:
         if value == 'value':
             for n in self.Nodes:
                 n_faces = len(n.faces)
-                if n_faces == 0:
-                    print('lll')
                 value = 0
                 for f in n.faces:
                     value += f.V
@@ -379,3 +377,8 @@ class Grid:
             z.append(n.z)
 
         return np.array([x, y, z]).T
+
+    def make_avl(self):
+        """Compose an avl tree that contains references to nodes and allows to logn search."""
+        for n in self.Nodes:
+            self.avl.insert(n)

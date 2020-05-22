@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from algorithms import knn, kdtree
 import time
+from test.test import test_all
 
 
 def create_half_cylinder(vertical_points=3, horizontal_points=5, filename='grid', create_dat=True, plot_pyplot=False):
@@ -89,10 +90,16 @@ def create_half_cylinder(vertical_points=3, horizontal_points=5, filename='grid'
 # ax.plot(ns, logns, label='logn')
 # plt.legend()
 # plt.show()
+test_all()
 
+start = time.time()
 grid1 = grid.Grid()
 grid2 = grid.Grid()
-tecplot_crystal.read_tecplot(grid1, 'wing_10_tm12_0120000000 (1).dat')
-tecplot_crystal.read_tecplot(grid2, 'wing_10_tm12_0120000000 (1).dat')
+tecplot_crystal.read_tecplot(grid1, 'air_inlet.dat')
+print('считалась первая сетка')
+tecplot_crystal.read_tecplot(grid2, 'air_inlet.dat')
+print('считалась вторая сетка')
 kdtree.interpolate(grid1, grid2)
-tecplot_crystal.print_tecplot(grid2, 'ex.dat')
+print('прошла интерполяция')
+tecplot_crystal.print_tecplot(grid2, 'air.dat')
+print('время работы:', time.time() - start)
