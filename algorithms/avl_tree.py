@@ -30,15 +30,10 @@ class AVLTree:
             left_sub_root = self._insert(root.left, key)
             root.left = left_sub_root
             left_sub_root.parent = root
-        elif self.is_node_less(root.key, key):
+        else:
             right_sub_root = self._insert(root.right, key)
             root.right = right_sub_root
             right_sub_root.parent = root
-        else:
-            print(key.coordinates())
-            print(root.key.coordinates())
-
-            raise ValueError('The tree cannot contain identical keys')
 
         root.height = max(self._get_height(root.left), self._get_height(root.right)) + 1
         root.balance = self._get_height(root.left) - self._get_height(root.right)
