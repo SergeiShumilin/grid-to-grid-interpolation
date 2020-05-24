@@ -1,5 +1,6 @@
 """This module implements basic geometrical routines."""
-from grid import grid, tecplot
+from grid import grid
+from tecplot import writer
 from matplotlib.tri import Triangulation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
@@ -46,6 +47,6 @@ def create_half_cylinder(vertical_points=3, horizontal_points=5, filename='grid'
     if create_dat:
         if not filename.endswith('.dat'):
             filename += '.dat'
-        tecplot.print_tecplot(mgrid, filename)
+        writer.write_tecplot(mgrid, filename)
 
     return mgrid
