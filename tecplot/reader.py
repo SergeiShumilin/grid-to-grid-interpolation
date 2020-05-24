@@ -1,70 +1,11 @@
-"""
-Module provides interaction with tecplot format.
-"""
-from .node import Node
-from .face import Face
-from .edge import Edge
-from .grid import Grid
-from .zone import Zone
-from math import fabs
+from grid.node import Node
+from grid.face import Face
+from grid.edge import Edge
+from grid.grid import Grid
+from grid.zone import Zone
 
-# Accuracy to compare nodes' coordinates.
-EPS = 10e-5
 NUMBER_OF_LINES_BETWEEN_ELEMENTS_COUNT_AND_VALUES = 4
 NUMBER_OF_VARIABLES = 11
-
-
-def print_tecplot(grid, filename):
-    """
-    Write grid containing multiple zones to the file.
-
-    :param grid: Grid object.
-    :param filename: file to write in.
-    :param merge: (bool) whether to merge grid.
-    Use ids of the nodes in grid.Nodes instead of zone.Nodes.
-    And the ids of faces from grid.Faces instead of zone.Faces.
-    I.e. continuing numbering through the grid.
-    """
-    print_tecplot_header(filename)
-    print_zones(grid, filename)
-
-
-def print_zones(grid, filename):
-    """
-    Print grid's zones to the filename.
-
-    Warning! if you use this function to add zones
-    to the existing tecplot file already containing zones
-    then the numeration of zone titles should be handled manually.
-
-    :param grid: Grid object.
-    :param filename: file to plot zones in.
-    """
-    for i, z in enumerate(grid.Zones):
-        print_zone_header(filename, 'ZONE {}'.format(i + 1), z.Nodes, z.Faces)
-
-        print_variables(filename, z.Nodes, z.Faces)
-
-        print_connectivity_list(filename, z.Nodes, z.Faces)
-
-
-def print_merged_grid(grid, filename):
-    """
-    Merge all zones and print the grid as single zone.
-
-    Use continuous numbering of nodes and faces through the grid
-     instead of their position zone-wise.
-
-    :param grid: Grid object.
-    :param filename: file to write in.
-    """
-    assert len(grid.Zones) > 1, '\nGrid is not multizone.\n'
-
-    print_zone_header(filename, 'ZONE 1', grid.Nodes, grid.Faces)
-
-    print_variables(filename, grid.Nodes, grid.Faces)
-
-    print_connectivity_list(filename, grid.Nodes, grid.Faces)
 
 
 def read_tecplot(grid, filename):
@@ -117,9 +58,6 @@ def read_tecplot(grid, filename):
     for f, n in zip(faces, nodes):
         set_faces(grid, n, f)
         grid.Faces += f
-
-    # Init new elements' ids.
-    grid.init_ids()
 
 
 def set_faces(grid, nodes, faces):
@@ -218,9 +156,7 @@ def parce_nodes_and_faces(lines):
         n.z = z
         nodes.append(n)
 
-    del xs
-    del ys
-    del zs
+    del xs, ys, zs
 
     faces = list()
 
@@ -281,35 +217,6 @@ def compose_node_list_nlogn_algorithm(grid, nodes_z2):
             n = found
 
 
-def compose_node_list_square_algorithm(grid, nodes_z2):
-    """
-    Compose grid.Nodes from the nodes from two zones to avoid repeating.
-
-    The nodes are compared according to their coordinates (x, y).
-    The algorithm does simple n^2 search through all nodes.
-
-    :param grid: Grid object.
-    :param nodes_z2: list: nodes of zone 2.
-    """
-    for i in range(len(nodes_z2)):
-
-        node_is_found = False
-
-        for j in range(len(grid.Nodes)):
-
-            # Compare coordinates.
-            cond1 = fabs(grid.Nodes[j].x - nodes_z2[i].x) <= EPS
-            cond2 = fabs(grid.Nodes[j].y - nodes_z2[i].y) <= EPS
-
-            if cond1 and cond2:
-                nodes_z2[i] = grid.Nodes[j]
-                node_is_found = True
-                break
-
-        if not node_is_found:
-            grid.Nodes.append(nodes_z2[i])
-
-
 def number_of_zones(file):
     """
     Count the number of times the word ZONE occurs in the file.
@@ -338,103 +245,3 @@ def number_of_faces(line):
     :return: int number of nodes.
     """
     return int(line[line.find('ELEMENTS =') + 10: len(line)])
-
-
-def print_tecplot_header(filename):
-    """
-    Write tecplot header containing the information
-    about Title and number of variables.
-
-    :param filename: file to write in.
-    """
-    with open(filename, 'w') as f:
-        f.write('# EXPORT MODE: CHECK_POINT')
-        f.write('TITLE = "GRID"\n')
-        f.write('VARIABLES = "X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"\n')
-
-
-def print_zone_header(filename, zone_name, nodes, faces):
-    """
-    Write information about zone into the file.
-
-    :param filename: file to write in.
-    :param zone_name: name of the zone.
-    :param nodes: nodes.
-    :param faces: faces.
-    """
-    with open(filename, 'a+') as f:
-        f.write('ZONE T="{}"\n'.format(zone_name))
-        f.write('NODES={}\n'.format((len(nodes))))
-        f.write('ELEMENTS={}\n'.format((len(faces))))
-        f.write('DATAPACKING=BLOCK\n')
-        f.write('ZONETYPE=FETRIANGLE\n')
-        f.write('VARLOCATION=([4-11]=CELLCENTERED)\n')
-
-
-def print_variables(filename, nodes, faces):
-    """
-    Write variables values in tecplot file.
-
-    :param filename: file to write in.
-    :param nodes: nodes containing values.
-    """
-    with open(filename, 'a+') as f:
-        # Variables' values.
-        for node in nodes:
-            f.write(str(node.x) + ' ')
-        f.write('\n')
-
-        for node in nodes:
-            f.write(str(node.y) + ' ')
-        f.write('\n')
-
-        for node in nodes:
-            f.write(str(node.z) + ' ')
-        f.write('\n')
-
-        for face in faces:
-            f.write(str(face.T) + ' ')
-        f.write('\n')
-
-        for face in faces:
-            f.write(str(face.Hw) + ' ')
-        f.write('\n')
-
-        for face in faces:
-            f.write(str(face.Hi) + ' ')
-        f.write('\n')
-
-        for face in faces:
-            f.write(str(face.HTC) + ' ')
-        f.write('\n')
-
-        for face in faces:
-            f.write(str(face.Beta) + ' ')
-        f.write('\n')
-
-        for face in faces:
-            f.write(str(face.TauX) + ' ')
-        f.write('\n')
-
-        for face in faces:
-            f.write(str(face.TauY) + ' ')
-        f.write('\n')
-
-        for face in faces:
-            f.write(str(face.TauZ) + ' ')
-        f.write('\n')
-
-
-def print_connectivity_list(filename, nodes, faces):
-    """
-    Write tecplot connectivity list.
-
-    :param filename: file to write in.
-    :param faces: faces with nodes.
-    """
-    with open(filename, 'a+') as f:
-        # Connectivity list.
-        for face in faces:
-            for id in face.nodes_ids:
-                f.write(str(id) + ' ')
-            f.write('\n')

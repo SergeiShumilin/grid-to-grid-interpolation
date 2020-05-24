@@ -33,7 +33,7 @@ def test_avl():
     for n in nodes:
         avl.insert(n)
 
-    assert avl.find(n5).value == 5, 'Wrong node found'
+    assert avl.find(n5).Id == 5, 'Wrong node found'
     assert not avl.find(n6), 'Wrong node found'
     print('Test 1 OK')
 
@@ -53,7 +53,7 @@ def test2():
     for n in nodes:
         avl.insert(n)
 
-    assert avl.find(n5).value == 5, 'Wrong node found'
+    assert avl.find(n5).Id == 5, 'Wrong node found'
     assert not avl.find(n6), 'Wrong node found'
     print('Test 2 OK')
 
