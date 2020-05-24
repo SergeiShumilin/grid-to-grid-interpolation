@@ -19,6 +19,10 @@ def read_tecplot(grid, filename):
 
     lines = file_with_grid.readlines()
 
+    if lines[0] != '# EXPORT MODE: CHECK_POINT\n':
+        print(lines[0])
+        raise ValueError('CHECK_POINT mode required')
+
     faces_count = list()
     indexes = list()
 
