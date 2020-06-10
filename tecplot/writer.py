@@ -122,7 +122,7 @@ def write_variables(filename, nodes, faces):
 
 def write_connectivity_list(filename, faces):
     """
-    Write tecplot connectivity list.
+    Write tecplot connectivity list. check
 
     :param filename: file to write in.
     :param faces: faces with nodes.
