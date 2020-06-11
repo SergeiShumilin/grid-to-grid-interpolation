@@ -124,7 +124,7 @@ def write_connectivity_list(filename, faces):
     """
     Write tecplot connectivity list.
 
-    :param filename: file to write in. check2
+    :param filename: file to write in.
     :param faces: faces with nodes.
     """
     with open(filename, 'a+') as f:
