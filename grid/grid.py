@@ -139,3 +139,37 @@ class Grid:
         """Compose an avl tree that contains references to nodes and allows to logn search."""
         for n in self.Nodes:
             self.avl.insert(n)
+
+    def is_isomprphic_to(self, grid) -> bool:
+        """
+        Check whether the grid is isomorphic to another grid.
+
+        We make a simple two-steps check:
+        1. Whether the number of nodes is equal.
+        2. Whether the sorted arrays of nodes' degrees (number of connected nodes) of the grids are equal.
+
+        It means that the result is not hundred percent correct, but this heuristics are useful and easy.
+
+        :param grid: Grid (obj)
+        :return: bool
+        """
+        if len(self.Nodes) == len(grid.Nodes):
+            degrees_old = []
+            degrees_new = []
+
+            for n in self.Nodes:
+                degrees_old.append(len(n.edges))
+            for n in grid.Nodes:
+                degrees_new.append(len(n.edges))
+
+            sorted(degrees_new)
+            sorted(degrees_old)
+
+            if degrees_new == degrees_old:
+                return True
+
+        return False
+
+    def relocate_values_from_isomorphic_grid(self, grid):
+        for i in range(len(self.Faces)):
+            self.Faces[i].T = grid.Faces[i].T

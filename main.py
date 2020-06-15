@@ -49,10 +49,14 @@ reader.read_tecplot(grid2, new_grid)
 if args.verbosity > 0:
     print('New grid read')
 
-kdtree.interpolate(grid1, grid2)
-
-if args.verbosity > 0:
-    print('Interpolation made')
+if grid2.is_isomprphic_to(grid1):
+    grid2.relocate_values_from_isomorphic_grid(grid1)
+    if args.verbosity > 0:
+        print('Grids are isomorphic. Values have been relocated')
+else:
+    kdtree.interpolate(grid1, grid2)
+    if args.verbosity > 0:
+        print('Interpolation made')
 
 if args.result_grid:
     writer.write_tecplot(grid2, result_grid)
