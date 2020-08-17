@@ -173,3 +173,4 @@ class Grid:
     def relocate_values_from_isomorphic_grid(self, grid):
         for i in range(len(self.Faces)):
             self.Faces[i].T = grid.Faces[i].T
+            self.Faces[i].Hw = grid.Faces[i].Hw
