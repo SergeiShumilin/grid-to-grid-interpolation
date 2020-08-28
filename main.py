@@ -23,6 +23,8 @@ parser.add_argument('-res', '--result_grid', help='interpolated grid. if not pro
                                                   'result file is \"new_grid\" + \"_interpolated\"')
 parser.add_argument("-v", "--verbosity", action="count",
                     help="increase output verbosity", default=0)
+parser.add_argument('-f', '--force_interpolation', help='force interpolation even if grids are isomorphic',
+                    action='store_true')
 args = parser.parse_args()
 
 old_grid = args.old_grid
@@ -49,7 +51,7 @@ reader.read_tecplot(grid2, new_grid)
 if args.verbosity > 0:
     print('New grid read')
 
-if grid2.is_isomprphic_to(grid1):
+if grid2.is_isomprphic_to(grid1) and not args.force_interpolation:
     grid2.relocate_values_from_isomorphic_grid(grid1)
     if args.verbosity > 0:
         print('Grids are isomorphic. Values have been relocated')
