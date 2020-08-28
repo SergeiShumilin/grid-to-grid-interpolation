@@ -1,6 +1,7 @@
 from algorithms.avl_tree import AVLTree
 from grid.node import Node
-
+from grid.grid import Grid
+from tecplot.reader import read_tecplot
 
 def test_comparing_of_nodes():
     n1 = Node(0, 0, 0, 1)
@@ -80,12 +81,25 @@ def test3():
     print('Test 3 OK')
 
 
+def test_isomorphism():
+    grid = Grid()
+    isomorphic_grid = Grid()
+    non_isomorphic_grid = Grid()
+    read_tecplot(grid, '../wing_1.dat')
+    read_tecplot(isomorphic_grid, '../wing_1_tm.dat')
+    read_tecplot(non_isomorphic_grid, '../wing_10.dat')
+
+    assert grid.is_isomprphic_to(isomorphic_grid), 'Grids are not isomorphic'
+    assert not grid.is_isomprphic_to(non_isomorphic_grid), 'Grids are isomorphic, but shouldn\'t be'
+    print('Test isomorphism OK')
+
+
 def test_all():
     test_comparing_of_nodes()
     test_avl()
     test2()
     test3()
-
+    test_isomorphism()
 
 if __name__ == '__main__':
     test_all()

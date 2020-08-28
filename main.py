@@ -2,7 +2,7 @@ import argparse
 import os
 from grid import grid
 from tecplot import reader, writer
-from algorithms import kdtree
+from algorithms import methods
 import time
 
 
@@ -56,7 +56,7 @@ if grid2.is_isomprphic_to(grid1) and not args.force_interpolation:
     if args.verbosity > 0:
         print('Grids are isomorphic. Values have been relocated')
 else:
-    kdtree.interpolate(grid1, grid2)
+    methods.face_centered_interpolation(grid1, grid2)
     if args.verbosity > 0:
         print('Interpolation made')
 

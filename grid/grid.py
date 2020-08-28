@@ -135,6 +135,17 @@ class Grid:
 
         return np.array([x, y, z]).T
 
+    def return_aux_nodes_as_a_ndim_array(self) -> np.array:
+        """Return (n_points, 3) array of coordinates of nodes."""
+        x, y, z = list(), list(), list()
+
+        for f in self.Faces:
+            x.append(f.aux_node.x)
+            y.append(f.aux_node.y)
+            z.append(f.aux_node.z)
+
+        return np.array([x, y, z]).T
+
     def make_avl(self):
         """Compose an avl tree that contains references to nodes and allows to logn search."""
         for n in self.Nodes:
@@ -174,3 +185,11 @@ class Grid:
         for i in range(len(self.Faces)):
             self.Faces[i].T = grid.Faces[i].T
             self.Faces[i].Hw = grid.Faces[i].Hw
+
+    def compute_aux_nodes(self):
+        """Calculate the points which are the point of medians' intersection."""
+        for f in self.Faces:
+            n1, n2, n3 = f.nodes[0], f.nodes[1], f.nodes[2]
+            f.aux_node.x = (n1.x + n2.x + n3.x) / 3
+            f.aux_node.y = (n1.y + n2.y + n3.y) / 3
+            f.aux_node.z = (n1.z + n2.z + n3.z) / 3

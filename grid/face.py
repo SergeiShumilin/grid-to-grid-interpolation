@@ -1,4 +1,5 @@
 """Module describing grid's face."""
+from .node import Node
 
 
 class Face:
@@ -24,3 +25,4 @@ class Face:
         self.TauX = None
         self.TauY = None
         self.TauZ = None
+        self.aux_node = Node()
