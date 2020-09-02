@@ -135,19 +135,19 @@ def parce_nodes_and_faces(lines):
     """
     # Read all nodes of zone 1.
     # x coords.
-    xs = map(float, lines[0].split(' ')[:-1])
+    xs = map(parcer, lines[0].split(' ')[:-1])
     # y coords.
-    ys = map(float, lines[1].split(' ')[:-1])
+    ys = map(parcer, lines[1].split(' ')[:-1])
     # z coords.
-    zs = map(float, lines[2].split(' ')[:-1])
-    t = map(float, lines[3].split(' ')[:-1])
-    hw = map(float, lines[4].split(' ')[:-1])
-    hi = map(float, lines[5].split(' ')[:-1])
-    htc = map(float, lines[6].split(' ')[:-1])
-    beta = map(float, lines[7].split(' ')[:-1])
-    taux = map(float, lines[8].split(' ')[:-1])
-    tauy = map(float, lines[9].split(' ')[:-1])
-    tauz = map(float, lines[10].split(' ')[:-1])
+    zs = map(parcer, lines[2].split(' ')[:-1])
+    t = map(parcer, lines[3].split(' ')[:-1])
+    hw = map(parcer, lines[4].split(' ')[:-1])
+    hi = map(parcer, lines[5].split(' ')[:-1])
+    htc = map(parcer, lines[6].split(' ')[:-1])
+    beta = map(parcer, lines[7].split(' ')[:-1])
+    taux = map(parcer, lines[8].split(' ')[:-1])
+    tauy = map(parcer, lines[9].split(' ')[:-1])
+    tauz = map(parcer, lines[10].split(' ')[:-1])
 
     # Nodes of zone 1.
     nodes = list()
@@ -167,12 +167,18 @@ def parce_nodes_and_faces(lines):
     for line in lines[NUMBER_OF_VARIABLES:]:
         f = Face()
         ids = line.split(' ')
-        ids = list(map(int, ids))
+        if len(ids) > 3:
+            ids = ids[:-1]
+        try:
+            ids = list(map(int, ids))
+        except ValueError:
+            print('Unable to convert to int')
+
         f.nodes_ids = ids
         faces.append(f)
 
         if ids[0] == ids[1] or ids[1] == ids[2] or ids[0] == ids[2]:
-            raise RuntimeError('Identical ids in the grid')
+            raise ValueError('Identical ids in the grid')
 
     for f, t_, hw_, hi_, htc_, beta_, taux_, tauy_, tauz_ in zip(faces, t, hw, hi, htc, beta, taux, tauy, tauz):
         f.T = t_
@@ -185,6 +191,14 @@ def parce_nodes_and_faces(lines):
         f.TauZ = tauz_
 
     return nodes, faces
+
+
+def parcer(s):
+    """Parcing values algorithm."""
+    if s == 'None':
+        return None
+    else:
+        return float(s)
 
 
 def set_nodes(grid, nodes):
