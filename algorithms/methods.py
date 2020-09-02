@@ -13,8 +13,10 @@ def interpolate_(old_grid, new_grid):
         new_n.Hw = neighbour.Hw
 
 
-def interpolate(old_grid, new_grid):
-    """Interpolate grids using K-D tree."""
+def interpolate_with_relocation(old_grid, new_grid):
+    """Interpolation with relocation of values in consideration from
+       faces to nodes - interpolate using knn - from nodes to faces.
+    """
     old_grid.relocate_values_from_faces_to_nodes()
     interpolate_(old_grid, new_grid)
     new_grid.relocate_values_from_nodes_to_faces()
@@ -29,3 +31,7 @@ def face_centered_interpolation(old_grid, new_grid):
         i = kdtree.query(f.aux_node.coordinates())[1]
         f.T = old_grid.Faces[i].T
         f.Hw = old_grid.Faces[i].Hw
+
+
+methods = {'cell_centered': face_centered_interpolation,
+           'with_relocation': interpolate_with_relocation}
