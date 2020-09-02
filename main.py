@@ -2,8 +2,14 @@ import argparse
 import os
 from grid import grid
 from tecplot import reader, writer
-from algorithms import methods
+from algorithms.methods import *
 import time
+
+
+def choose_method(name):
+    if name not in methods.keys():
+        raise ValueError('Wrong parameter ')
+    return methods[name]
 
 
 def check_argument(name):
@@ -25,6 +31,7 @@ parser.add_argument("-v", "--verbosity", action="count",
                     help="increase output verbosity", default=0)
 parser.add_argument('-f', '--force_interpolation', help='force interpolation even if grids are isomorphic',
                     action='store_true')
+parser.add_argument('-m', '--method', help='method of interpolation', choices=methods.keys(), default='cell_centered')
 args = parser.parse_args()
 
 old_grid = args.old_grid
@@ -56,7 +63,7 @@ if grid2.is_isomprphic_to(grid1) and not args.force_interpolation:
     if args.verbosity > 0:
         print('Grids are isomorphic. Values have been relocated')
 else:
-    methods.face_centered_interpolation(grid1, grid2)
+    choose_method(args.method)(grid1, grid2)
     if args.verbosity > 0:
         print('Interpolation made')
 
