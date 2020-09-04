@@ -1,7 +1,7 @@
 """This module implements basic geometrical routines."""
 from grid import grid
 from tecplot import writer
-from matplotlib.tri import Triangulation
+from matplotlib.tri import Triangulation, LinearTriInterpolator
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
@@ -42,6 +42,41 @@ def create_half_cylinder(vertical_points=3, horizontal_points=5, filename='grid'
         fig = plt.figure()
         ax = fig.gca(projection='3d')
         ax.plot_trisurf(x, y, z, triangles=delaunuy.triangles)
+        plt.show()
+
+    if create_dat:
+        if not filename.endswith('.dat'):
+            filename += '.dat'
+        writer.write_tecplot(mgrid, filename)
+
+    return mgrid
+
+
+def create_plane(n, m, filename='grid', create_dat=True, plot_pyplot=False):
+    u = np.linspace(0, 1, n, endpoint=True)
+    v = np.linspace(0, 1, m, endpoint=True)
+
+    u, v = np.meshgrid(u, v)
+
+    delaunuy = Triangulation(u.flatten(), v.flatten())
+
+    z = np.zeros((n, m))
+
+    x = u.flatten()
+    y = v.flatten()
+    z = z.flatten()
+
+    values = x + y
+
+    print(LinearTriInterpolator(delaunuy, values).gradient(0.5, 0.5))
+    mgrid = grid.Grid()
+
+    mgrid.set_nodes_and_faces(x, y, z, delaunuy.triangles)
+
+    if plot_pyplot:
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax.plot_trisurf(x, y, values, triangles=delaunuy.triangles)
         plt.show()
 
     if create_dat:
