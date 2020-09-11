@@ -1,9 +1,9 @@
-"""Module describing grid's face."""
+"""Module describing _grid's face."""
 from .node import Node
 
 
 class Face:
-    __doc__ = "Module describing grid's face."
+    __doc__ = "Module describing _grid's face."
 
     def __init__(self, Id=None):
         """

@@ -1,4 +1,4 @@
-"""Module describes triangular grid."""
+"""Module describes triangular _grid."""
 from .node import Node
 from .face import Face
 from .zone import Zone
@@ -7,7 +7,7 @@ from algorithms.avl_tree import AVLTree
 
 
 class Grid:
-    __doc__ = "Class describing triangular grid"
+    __doc__ = "Class describing triangular _grid"
 
     def __init__(self):
         """
@@ -21,9 +21,9 @@ class Grid:
 
     def init_zone(self):
         """
-        Init zone 1 of grid.
+        Init zone 1 of _grid.
 
-        Makes all elements of the grid belong to zone 1.
+        Makes all elements of the _grid belong to zone 1.
         """
         z = Zone()
         z.Nodes = self.Nodes
@@ -63,7 +63,7 @@ class Grid:
     @staticmethod
     def is_edge_present(n1, n2):
         """
-        Whether the `grid.Edges` contains the edge connecting nodes n1 and n2.
+        Whether the `_grid.Edges` contains the edge connecting nodes n1 and n2.
         :param n1: node 1.
         :param n2: node 2.
         :return: id of the edge if present and None if not.
@@ -153,7 +153,7 @@ class Grid:
 
     def is_isomprphic_to(self, grid) -> bool:
         """
-        Check whether the grid is isomorphic to another grid.
+        Check whether the _grid is isomorphic to another _grid.
 
         We make a simple two-steps check:
         1. Whether the number of nodes is equal.
@@ -193,3 +193,20 @@ class Grid:
             f.aux_node.x = (n1.x + n2.x + n3.x) / 3
             f.aux_node.y = (n1.y + n2.y + n3.y) / 3
             f.aux_node.z = (n1.z + n2.z + n3.z) / 3
+
+    def return_paramenter_as_ndarray(self, parameter):
+        values_in_auxes = list()
+        for f in self.Faces:
+            if parameter == 'T':
+                values_in_auxes.append(f.T)
+            if parameter == 'Hw':
+                values_in_auxes.append(f.Hw)
+        return np.array(values_in_auxes).reshape((len(values_in_auxes), 1))
+
+    def set_aux_nodes_parameters(self, interpolated_parameters, parameter='T'):
+        assert interpolated_parameters.shape[0] == 1, 'Wrong array dimensions'
+        for i, f in enumerate(self.Faces):
+            if parameter == 'T':
+                f.T = interpolated_parameters[0, i]
+            if parameter == 'Hw':
+                f.Hw = interpolated_parameters[0, i]
