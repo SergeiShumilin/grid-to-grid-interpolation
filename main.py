@@ -8,7 +8,7 @@ import time
 
 def choose_method(name):
     if name not in methods.keys():
-        raise ValueError('Wrong parameter ')
+        raise ValueError('Wrong parameter')
     return methods[name]
 
 
