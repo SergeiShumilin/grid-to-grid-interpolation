@@ -1,4 +1,3 @@
-from _grid.vector import *
 
 class Point:
     def __init__(self, x, y, z):
@@ -8,7 +7,3 @@ class Point:
 
     def coords(self):
         return self.x, self.y, self.z
-
-    def as_vector(self):
-        return Vector(self.x, self.y, self.z)
-

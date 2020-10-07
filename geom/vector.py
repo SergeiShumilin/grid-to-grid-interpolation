@@ -1,8 +1,9 @@
+import numpy as np
+from .point import Point
 
-from geom.basic import *
 
 class Vector:
-    def __init__(self, x, y, z):
+    def __init__(self, x=0, y=0, z=0):
         self.x = x
         self.y = y
         self.z = z
@@ -10,11 +11,40 @@ class Vector:
     def coords(self):
         return self.x, self.y, self.z
 
+    def coords_np_array(self):
+        return np.array([self.x, self.y, self.z]).reshape((1, 3))
+
     def norm(self):
+        from .basic import euclidian_distance
         return euclidian_distance(self.point(), Point(0, 0, 0))
 
     def point(self):
         return Point(self.x, self.y, self.z)
 
-    def sub(self, vector):
-        return Vector(self.x - vector.x, self.y - vector.y, self.z - vector.z)
+    def sum(self, other):
+        assert isinstance(other, Vector)
+        self.x += other.x
+        self.y += other.y
+        self.z += other.z
+
+    def sub(self, other):
+        assert isinstance(other, Vector)
+        self.x -= other.x
+        self.y -= other.y
+        self.z -= other.z
+
+    def dev(self, k):
+        self.mul(1 / k)
+
+    def make_unit(self):
+        l = self.norm()
+        self.dev(l)
+
+    def mul(self, k):
+        self.x *= k
+        self.y *= k
+        self.z *= k
+
+    @staticmethod
+    def subtract_vectors(v1, v2):
+        return Vector(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z)
