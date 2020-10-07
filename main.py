@@ -14,7 +14,7 @@ def choose_method(name):
 
 def check_argument(name):
     if not os.path.isfile(name):
-        print('File {} doesn\'t exist'.format(name))
+        print('File {} does not exist'.format(name))
         exit(1)
     else:
         if not old_grid[-4:] == '.dat':
@@ -23,9 +23,9 @@ def check_argument(name):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('old_grid', help='old _grid .dat file')
-parser.add_argument('new_grid', help='new _grid .dat file')
-parser.add_argument('-res', '--result_grid', help='interpolated _grid. if not provided than the name of the '
+parser.add_argument('old_grid', help='old grid .dat file')
+parser.add_argument('new_grid', help='new grid .dat file')
+parser.add_argument('-res', '--result_grid', help='interpolated grid. if not provided than the name of the '
                                                   'result file is \"new_grid\" + \"_interpolated\"')
 parser.add_argument("-v", "--verbosity", action="count",
                     help="increase output verbosity", default=0)
