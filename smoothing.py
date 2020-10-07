@@ -254,7 +254,7 @@ class TaubinSmoothing(Smoothing):
 if __name__ == '__main__':
     # g = create_half_cylinder(20, 20, 'easy.dat', plot_pyplot=True)
     g = Grid()
-    reader.read_tecplot(g, 'var8.dat')
+    reader.read_tecplot(g, 'grids/var8.dat')
     mark_all_fixed_nodes(g)
     null_space_smoothing(g, num_iter=100, st=0.1, epsilon=0.2, fix_direction_of_border_nodes=True)
     #TaubinSmoothing(g, num_iterations=50, lamb=0.5, mu=0.8).smoothing()

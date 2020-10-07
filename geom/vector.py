@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import array
 from .point import Point
 
 
@@ -12,7 +12,7 @@ class Vector:
         return self.x, self.y, self.z
 
     def coords_np_array(self):
-        return np.array([self.x, self.y, self.z]).reshape((1, 3))
+        return array([self.x, self.y, self.z]).reshape((1, 3))
 
     def norm(self):
         from .basic import euclidian_distance

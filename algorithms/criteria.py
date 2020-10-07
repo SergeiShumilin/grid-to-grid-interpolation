@@ -1,5 +1,5 @@
 
-import numpy as np
+from numpy import isnan
 
 
 def mass_energy_criteria(old_grid, new_grid):
@@ -7,8 +7,8 @@ def mass_energy_criteria(old_grid, new_grid):
     old_mass_hw = 0
     for f in old_grid.Faces:
         s = f.area()
-        assert ~np.isnan(f.T), 'NaN value of T'
-        assert ~np.isnan(f.Hw), 'NaN value of Hw'
+        assert ~isnan(f.T), 'NaN value of T'
+        assert ~isnan(f.Hw), 'NaN value of Hw'
         old_mass_t += f.T * s
         old_mass_hw += f.Hw * s
 
@@ -16,8 +16,8 @@ def mass_energy_criteria(old_grid, new_grid):
     new_mass_hw = 0
     for f in new_grid.Faces:
         s = f.area()
-        assert ~np.isnan(f.T), 'NaN value of T'
-        assert ~np.isnan(f.Hw), 'NaN value of Hw'
+        assert ~isnan(f.T), 'NaN value of T'
+        assert ~isnan(f.Hw), 'NaN value of Hw'
         new_mass_t += f.T * s
         new_mass_hw += f.Hw * s
 

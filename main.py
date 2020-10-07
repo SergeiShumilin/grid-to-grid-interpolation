@@ -1,19 +1,19 @@
 import argparse
-import os
+from os.path import isfile
 from _grid import grid
 from tecplot import reader, writer
 from algorithms.methods import *
-import time
+from time import time
 
 
 def choose_method(name):
     if name not in methods.keys():
-        raise ValueError('Wrong parameter')
+        raise ValueError('Wrong parameter ')
     return methods[name]
 
 
 def check_argument(name):
-    if not os.path.isfile(name):
+    if not isfile(name):
         print('File {} does not exist'.format(name))
         exit(1)
     else:
@@ -43,7 +43,7 @@ if result_grid:
         print('File {} should be .dat file'.format(result_grid))
         exit(1)
 
-start = time.time()
+start = time()
 grid1 = grid.Grid()
 grid2 = grid.Grid()
 reader.read_tecplot(grid1, old_grid)
@@ -67,4 +67,4 @@ else:
 
 if args.verbosity > 0:
     print('Result grid was written')
-    print('Total time:', time.time() - start)
+    print('Total time:', time() - start)

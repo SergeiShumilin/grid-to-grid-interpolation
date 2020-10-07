@@ -1,6 +1,7 @@
 from scipy.spatial import KDTree
 from scipy.interpolate import griddata
 
+
 def interpolate_(old_grid, new_grid):
     old_nodes = old_grid.return_coordinates_as_a_ndim_array()
     kdtree = KDTree(old_nodes)
@@ -44,6 +45,7 @@ def linear_interpolation(old_grid, new_grid):
     res_Hw = griddata(old_aux_nodes, values_Hw, new_aux_nodes, method='linear')
     new_grid.set_aux_nodes_parameters(res_T.T, 'T')
     new_grid.set_aux_nodes_parameters(res_Hw.T, 'Hw')
+
 
 methods = {'cell_centered': face_centered_interpolation,
            'with_relocation': interpolate_with_relocation}
