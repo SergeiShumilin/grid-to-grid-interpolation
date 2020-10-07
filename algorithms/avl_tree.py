@@ -1,4 +1,4 @@
-from grid.node import Node
+from _grid.node import Node
 
 NODE_COMPARE_ACCURACY = 10e-18
 

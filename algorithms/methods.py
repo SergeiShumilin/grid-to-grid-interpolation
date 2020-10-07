@@ -1,5 +1,5 @@
 from scipy.spatial import KDTree
-
+from scipy.interpolate import griddata
 
 def interpolate_(old_grid, new_grid):
     old_nodes = old_grid.return_coordinates_as_a_ndim_array()
@@ -32,6 +32,18 @@ def face_centered_interpolation(old_grid, new_grid):
         f.T = old_grid.Faces[i].T
         f.Hw = old_grid.Faces[i].Hw
 
+
+def linear_interpolation(old_grid, new_grid):
+    old_grid.compute_aux_nodes()
+    new_grid.compute_aux_nodes()
+    old_aux_nodes = old_grid.return_aux_nodes_as_a_ndim_array()
+    new_aux_nodes = new_grid.return_aux_nodes_as_a_ndim_array()
+    values_T = old_grid.return_paramenter_as_ndarray(parameter='T')
+    values_Hw = old_grid.return_paramenter_as_ndarray(parameter='Hw')
+    res_T = griddata(old_aux_nodes, values_T, new_aux_nodes, method='linear')
+    res_Hw = griddata(old_aux_nodes, values_Hw, new_aux_nodes, method='linear')
+    new_grid.set_aux_nodes_parameters(res_T.T, 'T')
+    new_grid.set_aux_nodes_parameters(res_Hw.T, 'Hw')
 
 methods = {'cell_centered': face_centered_interpolation,
            'with_relocation': interpolate_with_relocation}
