@@ -1,8 +1,8 @@
-from grid.node import Node
-from grid.face import Face
-from grid.edge import Edge
-from grid.grid import Grid
-from grid.zone import Zone
+from _grid.node import Node
+from _grid.face import Face
+from _grid.edge import Edge
+from _grid.grid import Grid
+from _grid.zone import Zone
 
 NUMBER_OF_LINES_BETWEEN_ELEMENTS_COUNT_AND_VALUES = 4
 NUMBER_OF_VARIABLES = 11
@@ -15,53 +15,54 @@ def read_tecplot(grid, filename):
     :param grid: Grid object.
     :param filename: file to read from.
     """
-    file_with_grid = open(filename, 'r')
+    with open(filename, 'r') as file_with_grid:
 
-    lines = file_with_grid.readlines()
+        lines = file_with_grid.readlines()
 
-    if lines[0] != '# EXPORT MODE: CHECK_POINT\n':
-        print(lines[0])
-        raise ValueError('CHECK_POINT mode required')
+        if lines[0] != '# EXPORT MODE: CHECK_POINT\n':
+            print(lines[0])
+            raise ValueError('CHECK_POINT mode required')
 
-    faces_count = list()
-    indexes = list()
+        faces_count = list()
+        indexes = list()
 
-    # Find and remember all ELEMENTS words in the file.
-    # They design a start of zone.
-    for i, line in enumerate(lines):
-        if line.find('ELEMENTS=') != -1:
-            faces_count.append(number_of_faces(line))
+        # Find and remember all ELEMENTS words in the file.
+        # They design a start of zone.
+        for i, line in enumerate(lines):
+            if line.find('ELEMENTS=') != -1:
+                faces_count.append(number_of_faces(line))
 
-            # +3 is the correction to start from the line
-            # where the variables start.
-            indexes.append(i + NUMBER_OF_LINES_BETWEEN_ELEMENTS_COUNT_AND_VALUES)
+                # +3 is the correction to start from the line
+                # where the variables start.
+                indexes.append(i + NUMBER_OF_LINES_BETWEEN_ELEMENTS_COUNT_AND_VALUES)
 
-    # List of lists of nodes for each zone.
-    nodes = list()
-    # List of lists of faces for each zone.
-    faces = list()
+        # List of lists of nodes for each zone.
+        nodes = list()
+        # List of lists of faces for each zone.
+        faces = list()
 
-    # Extract each zone from certain lines using indexes of lines
-    # obtained earlier.
-    for f, i in zip(faces_count, indexes):
-        # Create a zone.
-        z = Zone()
-        grid.Zones.append(z)
+        # Extract each zone from certain lines using indexes of lines
+        # obtained earlier.
+        for f, i in zip(faces_count, indexes):
+            # Create a zone.
+            z = Zone()
+            grid.Zones.append(z)
 
-        # Return nodes and faces for the zone
-        # by parcing the file.
-        parces_nodes, parces_faces = parce_nodes_and_faces(lines[i: i + f + NUMBER_OF_VARIABLES])
-        nodes.append(parces_nodes)
-        faces.append(parces_faces)
+            # Return nodes and faces for the zone
+            # by parcing the file.
+            parces_nodes, parces_faces = parce_nodes_and_faces(lines[i: i + f + NUMBER_OF_VARIABLES])
+            nodes.append(parces_nodes)
+            faces.append(parces_faces)
 
-        z.Nodes = parces_nodes
-        z.Faces = parces_faces
+            z.Nodes = parces_nodes
+            z.Faces = parces_faces
 
-    set_nodes(grid, nodes)
+            assert len(parces_faces) == f
 
-    for f, n in zip(faces, nodes):
-        set_faces(grid, n, f)
-        grid.Faces += f
+        set_nodes(grid, nodes)
+        for f, n in zip(faces, nodes):
+            set_faces(grid, n, f)
+            grid.Faces += f
 
 
 def set_faces(grid, nodes, faces):
@@ -71,7 +72,7 @@ def set_faces(grid, nodes, faces):
     1 2 3  -> Face 1
     2 3 4  -> Face 2
 
-    Also, edges are created and linked basing on their presence in grid.Edge.
+    Also, edges are created and linked basing on their presence in _grid.Edge.
 
     :param grid: Grid object.
     :param nodes: list : nodes to link.
@@ -135,11 +136,11 @@ def parce_nodes_and_faces(lines):
     """
     # Read all nodes of zone 1.
     # x coords.
-    xs = map(parcer, lines[0].split(' ')[:-1])
+    xs = map(parcer, lines[0].split(' '))
     # y coords.
-    ys = map(parcer, lines[1].split(' ')[:-1])
+    ys = map(parcer, lines[1].split(' '))
     # z coords.
-    zs = map(parcer, lines[2].split(' ')[:-1])
+    zs = map(parcer, lines[2].split(' '))
     t = map(parcer, lines[3].split(' ')[:-1])
     hw = map(parcer, lines[4].split(' ')[:-1])
     hi = map(parcer, lines[5].split(' ')[:-1])
@@ -154,6 +155,12 @@ def parce_nodes_and_faces(lines):
 
     # Initialize node array for zone 1.
     for x, y, z in zip(xs, ys, zs):
+        if x is None:
+            continue
+        if y is None:
+            continue
+        if z is None:
+            continue
         n = Node()
         n.x = x
         n.y = y
@@ -178,7 +185,8 @@ def parce_nodes_and_faces(lines):
         faces.append(f)
 
         if ids[0] == ids[1] or ids[1] == ids[2] or ids[0] == ids[2]:
-            raise ValueError('Identical ids in the grid')
+            print(ids[0], ids[1], ids[2])
+            raise ValueError('Identical ids in the _grid')
 
     for f, t_, hw_, hi_, htc_, beta_, taux_, tauy_, tauz_ in zip(faces, t, hw, hi, htc, beta, taux, tauy, tauz):
         f.T = t_
@@ -197,18 +205,20 @@ def parcer(s):
     """Parcing values algorithm."""
     if s == 'None':
         return None
+    if s == '\n':
+        return None
     else:
         return float(s)
 
 
 def set_nodes(grid, nodes):
     """
-    Fill grid.Nodes list with unique nodes from each zone.
+    Fill _grid.Nodes list with unique nodes from each zone.
 
     :param grid: Grid object.
     :param nodes: list of lists of nodes for each zone.
     """
-    # Copy all nodes from zone 1 to the grid.
+    # Copy all nodes from zone 1 to the _grid.
     grid.Nodes = [node for node in nodes[0]]
     grid.make_avl()
 
@@ -218,7 +228,7 @@ def set_nodes(grid, nodes):
 
 def compose_node_list_nlogn_algorithm(grid, nodes_z2):
     """
-    Compose grid.Nodes from the nodes from two zones to avoid repeating.
+    Compose _grid.Nodes from the nodes from two zones to avoid repeating.
 
     The nodes are compared according to their coordinates (x, y).
     The algorithm does simple n^2 search through all nodes.

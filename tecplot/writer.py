@@ -1,16 +1,16 @@
-__doc__ = """Write grid to .dat file"""
+__doc__ = """Write _grid to .dat file"""
 
 
 def write_tecplot(grid, filename):
     """
-    Write grid containing multiple zones to the file.
+    Write _grid containing multiple zones to the file.
 
     :param grid: Grid object.
     :param filename: file to write in.
-    :param merge: (bool) whether to merge grid.
-    Use ids of the nodes in grid.Nodes instead of zone.Nodes.
-    And the ids of faces from grid.Faces instead of zone.Faces.
-    I.e. continuing numbering through the grid.
+    :param merge: (bool) whether to merge _grid.
+    Use ids of the nodes in _grid.Nodes instead of zone.Nodes.
+    And the ids of faces from _grid.Faces instead of zone.Faces.
+    I.e. continuing numbering through the _grid.
     """
     write_tecplot_header(filename)
     write_zones(grid, filename)
@@ -18,7 +18,7 @@ def write_tecplot(grid, filename):
 
 def write_zones(grid, filename):
     """
-    Print grid's zones to the filename.
+    Print _grid's zones to the filename.
 
     Warning! if you use this function to add zones
     to the existing tecplot file already containing zones
@@ -45,7 +45,7 @@ def write_tecplot_header(filename):
     with open(filename, 'w') as f:
         f.write('# EXPORT MODE: CHECK_POINT\n')
         f.write('TITLE = "GRID"\n')
-        f.write('VARIABLES = "X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"\n')
+        f.write('VARIABLES = "X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ", "NX", "NY", "NZ", "F"\n')
 
 
 def write_zone_header(filename, zone_name, nodes, faces):
@@ -63,7 +63,7 @@ def write_zone_header(filename, zone_name, nodes, faces):
         f.write('ELEMENTS={}\n'.format((len(faces))))
         f.write('DATAPACKING=BLOCK\n')
         f.write('ZONETYPE=FETRIANGLE\n')
-        f.write('VARLOCATION=([4-11]=CELLCENTERED)\n')
+        f.write('VARLOCATION=([4-14]=CELLCENTERED)\n')
 
 
 def write_variables(filename, nodes, faces):
@@ -117,6 +117,25 @@ def write_variables(filename, nodes, faces):
 
         for face in faces:
             f.write(str(face.TauZ) + ' ')
+        f.write('\n')
+
+        for face in faces:
+            f.write(str(face.normal().x) + ' ')
+        f.write('\n')
+
+        for face in faces:
+            f.write(str(face.normal().y) + ' ')
+        f.write('\n')
+
+        for face in faces:
+            f.write(str(face.normal().z) + ' ')
+        f.write('\n')
+
+        for node in nodes:
+            if node.fixed:
+                f.write(str(1) + ' ')
+            else:
+                f.write(str(0) + ' ')
         f.write('\n')
 
 
