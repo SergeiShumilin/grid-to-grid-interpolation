@@ -37,6 +37,7 @@ class Grid:
         :param n: node.
         :param f: face.
         """
+        assert len(f.nodes) < 3, 'There are already 3 nodes incident to the face'
         n.faces.append(f)
         f.nodes.append(n)
 
@@ -47,6 +48,7 @@ class Grid:
         :param n: node.
         :param e: edge.
         """
+        assert len(e.nodes) < 2, 'There are already 2 nodes incident to the edge'
         n.edges.append(e)
         e.nodes.append(n)
 
@@ -57,8 +59,12 @@ class Grid:
         :param f: face.
         :param e: edge.
         """
-        f.edges.append(e)
-        e.faces.append(f)
+        assert len(f.edges) < 3, 'There are already 3 edges incident to the face'
+        assert len(e.faces) < 2, 'There are already 2 faces incident to the edge'
+        if e not in f.edges:
+            f.edges.append(e)
+        if f not in e.faces:
+            e.faces.append(f)
 
     @staticmethod
     def is_edge_present(n1, n2):
@@ -68,11 +74,12 @@ class Grid:
         :param n2: node 2.
         :return: id of the edge if present and None if not.
         """
+
         for edge in n1.edges:
-            if edge.nodes[0] == n2 or edge.nodes[1] == n2:
+            if n2 in edge.nodes:
                 return edge
-            else:
-                return None
+
+        return None
 
     def set_nodes_and_faces(self, x, y, z, triangles):
         """
@@ -91,8 +98,8 @@ class Grid:
             i += 1
             f.nodes_ids = nids + 1
             self.link_face_and_node(f, self.Nodes[nids[0]])
-            self.link_face_and_node(f, self.Nodes[nids[1]])
             self.link_face_and_node(f, self.Nodes[nids[2]])
+            self.link_face_and_node(f, self.Nodes[nids[1]])
             self.Faces.append(f)
 
         self.init_zone()

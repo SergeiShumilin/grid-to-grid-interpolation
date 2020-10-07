@@ -1,6 +1,7 @@
 """Module describing _grid's node"""
 
 from geom.point import Point
+from geom.vector import Vector
 
 class Node:
     __doc__ = "class describing node"
@@ -21,8 +22,15 @@ class Node:
         self.faces = list()
         self.edges = list()
 
+        self.fixed = False
+
     def coordinates(self) -> tuple:
         return self.x, self.y, self.z
 
     def as_point(self):
         return Point(self.x, self.y, self.z)
+
+    def move(self, v):
+        self.x += v.x
+        self.y += v.y
+        self.z += v.z

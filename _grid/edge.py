@@ -12,3 +12,4 @@ class Edge:
         self.Id = None
         self.nodes = list()
         self.faces = list()
+        self.border = False
