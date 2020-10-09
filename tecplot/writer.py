@@ -45,7 +45,7 @@ def write_tecplot_header(filename):
     with open(filename, 'w') as f:
         f.write('# EXPORT MODE: CHECK_POINT\n')
         f.write('TITLE = "GRID"\n')
-        f.write('VARIABLES = "X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ", "NX", "NY", "NZ", "F"\n')
+        f.write('VARIABLES = "X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"\n')
 
 
 def write_zone_header(filename, zone_name, nodes, faces):
@@ -63,7 +63,7 @@ def write_zone_header(filename, zone_name, nodes, faces):
         f.write('ELEMENTS={}\n'.format((len(faces))))
         f.write('DATAPACKING=BLOCK\n')
         f.write('ZONETYPE=FETRIANGLE\n')
-        f.write('VARLOCATION=([4-14]=CELLCENTERED)\n')
+        f.write('VARLOCATION=([4-11]=CELLCENTERED)\n')
 
 
 def write_variables(filename, nodes, faces):
@@ -117,25 +117,6 @@ def write_variables(filename, nodes, faces):
 
         for face in faces:
             f.write(str(face.TauZ) + ' ')
-        f.write('\n')
-
-        for face in faces:
-            f.write(str(face.normal().x) + ' ')
-        f.write('\n')
-
-        for face in faces:
-            f.write(str(face.normal().y) + ' ')
-        f.write('\n')
-
-        for face in faces:
-            f.write(str(face.normal().z) + ' ')
-        f.write('\n')
-
-        for node in nodes:
-            if node.fixed:
-                f.write(str(1) + ' ')
-            else:
-                f.write(str(0) + ' ')
         f.write('\n')
 
 

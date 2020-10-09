@@ -23,6 +23,7 @@ class Node:
         self.edges = list()
 
         self.fixed = False
+        self.component = None
 
     def coordinates(self) -> tuple:
         return self.x, self.y, self.z
