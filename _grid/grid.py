@@ -217,3 +217,33 @@ class Grid:
                 f.T = interpolated_parameters[0, i]
             if parameter == 'Hw':
                 f.Hw = interpolated_parameters[0, i]
+
+    def depth_first_traversal(self, node, component):
+        if node.component is None:
+            node.component = component
+        else:
+            return
+
+        neighbours = []
+        for e in node.edges:
+            assert len(e.nodes) == 2
+            if e.nodes[0] == node:
+                neighbours.append(e.nodes[1])
+            else:
+                neighbours.append(e.nodes[0])
+
+        for neigh in neighbours:
+            self.depth_first_traversal(neigh, component)
+
+    def get_number_of_components(self):
+        assert len(self.Nodes) > 0
+        for i in range(1, 1000):
+            start_node = None
+            for n in self.Nodes:
+                if n.component is None:
+                    start_node = n
+                    break
+
+            if start_node is None:
+                return i - 1
+            self.depth_first_traversal(start_node, i)
