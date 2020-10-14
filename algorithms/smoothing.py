@@ -19,7 +19,7 @@ class Smoothing:
         assert node_fixation_method in [None, 'no_move', 'along_edge']
         self.node_fixation_method = node_fixation_method
 
-        if self.node_fixation_method:
+        if self.node_fixation_method is not None:
             self.mark_all_fixed_nodes()
 
     @staticmethod
@@ -49,7 +49,8 @@ class Smoothing:
     def move_node(self, node, shift: Vector):
         if self.node_fixation_method == 'no_move':
             if node.fixed:
-                return
+                pass
+                print('aaaaaa')
             else:
                 node.move(shift)
         if self.node_fixation_method == 'along_edge':
@@ -72,6 +73,11 @@ class Smoothing:
                 for n in e.nodes:
                     if not n.fixed:
                         n.fixed = True
+
+    def apply_laplacians(self, laplacians):
+        assert len(self.grid.Nodes) == len(laplacians)
+        for n, l in zip(self.grid.Nodes, laplacians):
+            self.move_node(n, l)
 
 
 class LaplacianSmoothing(Smoothing):
@@ -151,7 +157,8 @@ class TaubinSmoothing(Smoothing):
 class NullSpaceSmoothing(Smoothing):
     __name__ = "NullSpace"
 
-    def __init__(self, grid: Grid, num_iterations=20, st=0.2, epsilon=10e-3, n_neighbours_for_border_nodes=None, node_fixation_method=None):
+    def __init__(self, grid: Grid, num_iterations=20, st=0.2, epsilon=10e-3, n_neighbours_for_border_nodes=None,
+                 node_fixation_method=None):
         self.st = st
         self.epsilon = epsilon
         self.n_neighbours_for_border_nodes = n_neighbours_for_border_nodes
@@ -182,7 +189,7 @@ class NullSpaceSmoothing(Smoothing):
         if n_neighbours is None:
             n_neighbours = len(node.faces)
 
-        visited = zeros((len(self.grid.Faces)))
+        visited = zeros((len(self.grid.Faces), 0), dtype=bool)
         # find n_neighbours with breadth-first search
         neighbours = []
         q = deque()
@@ -193,8 +200,8 @@ class NullSpaceSmoothing(Smoothing):
 
         while len(q) > 0 and len(neighbours) < n_neighbours:
             search_around_face = q.popleft()
-            visited[search_around_face.Id] = 1
-            for adjacent_face in search_around_face.adj_faces:
+            visited[search_around_face.Id] = True
+            for adjacent_face in search_around_face.adjacent_faces():
                 if not visited[adjacent_face.Id]:
                     q.appendleft(adjacent_face)
                     neighbours.append(adjacent_face)
@@ -207,7 +214,7 @@ class NullSpaceSmoothing(Smoothing):
         p = point_to_vector(node.as_point())
         weights = 0
 
-        for f in node.faces:
+        for f in self.find_n_neighbours_faces_of_node(node, n_neighbours):
             c = point_to_vector(f.centroid())
             c.sub(p)
             weight = f.area()
@@ -221,6 +228,7 @@ class NullSpaceSmoothing(Smoothing):
 
     def smoothing(self):
         for i in range(self.num_iterations):
+            laplacians = []
             for n in self.grid.Nodes:
                 m = len(n.faces)
                 w = [f.area() for f in n.faces]
@@ -253,12 +261,15 @@ class NullSpaceSmoothing(Smoothing):
 
                 assert ns.shape == (3, 3 - k), 'Wrong eigenvectors shape'
                 assert dv.shape == (3, 1), 'Wrong shape'
-                #self.print_info(n, eigenValues, ns, k)
+                # self.print_info(n, eigenValues, ns, k)
                 if k < 3:
                     ttT = dot(ns, ns.T)
                     t = self.st * dot(ttT, dv)
                     assert t.shape == (3, 1), 'Wrong shift shape'
                     laplacian = Vector(float(t[0, 0]), float(t[1, 0]), float(t[2, 0]))
-                    self.move_node(n, laplacian)
+                else:
+                    laplacian = Vector(0, 0, 0)
+                laplacians.append(laplacian)
 
+            Smoothing.apply_laplacians(self, laplacians)
             Smoothing.write_grid_and_print_info(self, i)

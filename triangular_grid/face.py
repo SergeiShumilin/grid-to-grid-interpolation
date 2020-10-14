@@ -69,9 +69,11 @@ class Face:
     def adjacent_faces(self):
         adj_faces = []
         for e in self.edges:
-            assert len(e.faces) == 2
+            assert len(e.faces) <= 2
             if e.faces[0] == self:
-                adj_faces.append(e.faces[1])
+                if len(e.faces) == 2:
+                    adj_faces.append(e.faces[1])
             else:
+                assert e.faces[0] is not e.faces[1]
                 adj_faces.append(e.faces[0])
         return adj_faces
