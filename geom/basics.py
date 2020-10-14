@@ -1,10 +1,9 @@
 """This module implements basic geometrical routines."""
 
-from tecplot import writer
 from numpy import sqrt
 from .vector import Vector
 from .point import Point
-from _grid.edge import Edge
+from triangular_grid.edge import Edge
 
 
 def edge_to_vector(e: Edge) -> Vector:

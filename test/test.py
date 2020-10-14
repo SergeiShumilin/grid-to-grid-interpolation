@@ -1,11 +1,11 @@
 from algorithms.avl_tree import AVLTree
-from _grid.node import Node
-from _grid.grid import Grid
+from triangular_grid.node import Node
+from triangular_grid.grid import Grid
 from tecplot.reader import read_tecplot
-from _grid.face import Face
+from triangular_grid.face import Face
 from geom.vector import Vector
 from geom.point import Point
-from geom.basic import *
+from geom.basics import *
 
 
 def test_comparing_of_nodes():

@@ -1,8 +1,8 @@
-"""Module describing _grid's edge."""
+"""Module describing triangular_grid's edge."""
 
 
 class Edge:
-    __doc__ = "Module describing _grid's edge."
+    __doc__ = "Module describing triangular_grid's edge."
 
     def __init__(self):
         """

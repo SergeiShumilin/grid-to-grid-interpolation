@@ -1,16 +1,16 @@
-__doc__ = """Write _grid to .dat file"""
+__doc__ = """Write triangular_grid to .dat file"""
 
 
 def write_tecplot(grid, filename):
     """
-    Write _grid containing multiple zones to the file.
+    Write triangular_grid containing multiple zones to the file.
 
     :param grid: Grid object.
     :param filename: file to write in.
-    :param merge: (bool) whether to merge _grid.
-    Use ids of the nodes in _grid.Nodes instead of zone.Nodes.
-    And the ids of faces from _grid.Faces instead of zone.Faces.
-    I.e. continuing numbering through the _grid.
+    :param merge: (bool) whether to merge triangular_grid.
+    Use ids of the nodes in triangular_grid.Nodes instead of zone.Nodes.
+    And the ids of faces from triangular_grid.Faces instead of zone.Faces.
+    I.e. continuing numbering through the triangular_grid.
     """
     write_tecplot_header(filename)
     write_zones(grid, filename)
@@ -18,7 +18,7 @@ def write_tecplot(grid, filename):
 
 def write_zones(grid, filename):
     """
-    Print _grid's zones to the filename.
+    Print triangular_grid's zones to the filename.
 
     Warning! if you use this function to add zones
     to the existing tecplot file already containing zones

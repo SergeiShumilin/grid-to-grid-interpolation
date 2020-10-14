@@ -1,6 +1,6 @@
 import argparse
 from os.path import isfile
-from _grid import grid
+from triangular_grid import grid
 from tecplot import reader, writer
 from algorithms.methods import *
 from time import time

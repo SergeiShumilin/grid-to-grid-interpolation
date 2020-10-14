@@ -15,7 +15,7 @@ class Vector:
         return array([self.x, self.y, self.z]).reshape((1, 3))
 
     def norm(self):
-        from .basic import euclidian_distance
+        from .basics import euclidian_distance
         return euclidian_distance(self.point(), Point(0, 0, 0))
 
     def point(self):

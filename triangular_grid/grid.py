@@ -1,4 +1,4 @@
-"""Module describes triangular _grid."""
+"""Module describes triangular triangular_grid."""
 from .node import Node
 from .face import Face
 from .zone import Zone
@@ -7,7 +7,7 @@ from algorithms.avl_tree import AVLTree
 
 
 class Grid:
-    __doc__ = "Class describing triangular _grid"
+    __doc__ = "Class describing triangular triangular_grid"
 
     def __init__(self):
         """
@@ -21,9 +21,9 @@ class Grid:
 
     def init_zone(self):
         """
-        Init zone 1 of _grid.
+        Init zone 1 of triangular_grid.
 
-        Makes all elements of the _grid belong to zone 1.
+        Makes all elements of the triangular_grid belong to zone 1.
         """
         z = Zone()
         z.Nodes = self.Nodes
@@ -69,7 +69,7 @@ class Grid:
     @staticmethod
     def is_edge_present(n1, n2):
         """
-        Whether the `_grid.Edges` contains the edge connecting nodes n1 and n2.
+        Whether the `triangular_grid.Edges` contains the edge connecting nodes n1 and n2.
         :param n1: node 1.
         :param n2: node 2.
         :return: id of the edge if present and None if not.
@@ -160,7 +160,7 @@ class Grid:
 
     def is_isomprphic_to(self, grid) -> bool:
         """
-        Check whether the _grid is isomorphic to another _grid.
+        Check whether the triangular_grid is isomorphic to another triangular_grid.
 
         We make a simple two-steps check:
         1. Whether the number of nodes is equal.

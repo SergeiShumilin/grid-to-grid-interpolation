@@ -1,8 +1,8 @@
-from _grid.node import Node
-from _grid.face import Face
-from _grid.edge import Edge
-from _grid.grid import Grid
-from _grid.zone import Zone
+from triangular_grid.node import Node
+from triangular_grid.face import Face
+from triangular_grid.edge import Edge
+from triangular_grid.grid import Grid
+from triangular_grid.zone import Zone
 
 NUMBER_OF_LINES_BETWEEN_ELEMENTS_COUNT_AND_VALUES = 4
 NUMBER_OF_VARIABLES = 11
@@ -72,7 +72,7 @@ def set_faces(grid, nodes, faces):
     1 2 3  -> Face 1
     2 3 4  -> Face 2
 
-    Also, edges are created and linked basing on their presence in _grid.Edge.
+    Also, edges are created and linked basing on their presence in triangular_grid.Edge.
 
     :param grid: Grid object.
     :param nodes: list : nodes to link.
@@ -186,7 +186,7 @@ def parce_nodes_and_faces(lines):
 
         if ids[0] == ids[1] or ids[1] == ids[2] or ids[0] == ids[2]:
             print(ids[0], ids[1], ids[2])
-            raise ValueError('Identical ids in the _grid')
+            raise ValueError('Identical ids in the triangular_grid')
 
     for f, t_, hw_, hi_, htc_, beta_, taux_, tauy_, tauz_ in zip(faces, t, hw, hi, htc, beta, taux, tauy, tauz):
         f.T = t_
@@ -213,12 +213,12 @@ def parcer(s):
 
 def set_nodes(grid, nodes):
     """
-    Fill _grid.Nodes list with unique nodes from each zone.
+    Fill triangular_grid.Nodes list with unique nodes from each zone.
 
     :param grid: Grid object.
     :param nodes: list of lists of nodes for each zone.
     """
-    # Copy all nodes from zone 1 to the _grid.
+    # Copy all nodes from zone 1 to the triangular_grid.
     grid.Nodes = [node for node in nodes[0]]
     grid.make_avl()
 
@@ -228,7 +228,7 @@ def set_nodes(grid, nodes):
 
 def compose_node_list_nlogn_algorithm(grid, nodes_z2):
     """
-    Compose _grid.Nodes from the nodes from two zones to avoid repeating.
+    Compose triangular_grid.Nodes from the nodes from two zones to avoid repeating.
 
     The nodes are compared according to their coordinates (x, y).
     The algorithm does simple n^2 search through all nodes.

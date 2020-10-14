@@ -1,4 +1,4 @@
-"""Module describing _grid's node"""
+"""Module describing triangular_grid's node"""
 
 from geom.point import Point
 from geom.vector import Vector
@@ -9,7 +9,7 @@ class Node:
     def __init__(self, x=None, y=None, z=None, Id=None):
         """
         Construct node.
-        :param id: node's id in the _grid.
+        :param id: node's id in the triangular_grid.
         """
         self.x = x
         self.y = y

@@ -1,12 +1,12 @@
-"""Module describing _grid's face."""
+"""Module describing triangular_grid's face."""
 from .node import Node
-from geom.basic import cross_product, point_to_vector
+from geom.basics import cross_product, point_to_vector
 from geom.vector import Vector
 from geom.vector import Point
 
 
 class Face:
-    __doc__ = "Module describing _grid's face."
+    __doc__ = "Module describing triangular_grid's face."
 
     def __init__(self, Id=None):
         """
@@ -65,3 +65,13 @@ class Face:
         z = (n1.z + n2.z + n3.z) / 3
 
         return Point(x, y, z)
+
+    def adjacent_faces(self):
+        adj_faces = []
+        for e in self.edges:
+            assert len(e.faces) == 2
+            if e.faces[0] == self:
+                adj_faces.append(e.faces[1])
+            else:
+                adj_faces.append(e.faces[0])
+        return adj_faces
