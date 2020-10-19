@@ -196,6 +196,22 @@ def test_vector():
     assert v.coords() == (1.55, 0.15500000000000003, -1.55), print('Wrong vector division', v.coords())
 
 
+def test_alpha_quality_measure():
+    f = Face()
+    n1 = Node(0, 0, 0)
+    n2 = Node(1, 0, 0)
+    n3 = Node(0.5, 0, 0.866)
+    e1 = Edge()
+    e1.nodes = [n1, n2]
+    e2 = Edge()
+    e2.nodes = [n2, n3]
+    e3 = Edge()
+    e3.nodes = [n3, n1]
+    f.edges = [e1, e2, e3]
+    f.nodes = [n1, n2, n3]
+    assert 1 - f.alpha_quality_measure() < 10e-6, print(f.alpha_quality_measure())
+
+
 def test_all():
     test_comparing_of_nodes()
     test_avl()
@@ -207,6 +223,7 @@ def test_all():
     test_dot()
     test_cross()
     test_area()
+    test_alpha_quality_measure()
 
 
 if __name__ == '__main__':

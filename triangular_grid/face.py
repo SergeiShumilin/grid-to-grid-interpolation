@@ -1,6 +1,6 @@
 """Module describing triangular_grid's face."""
 from .node import Node
-from geom.basics import cross_product, point_to_vector
+from geom.basics import cross_product, point_to_vector, edge_to_vector
 from geom.vector import Vector
 from geom.vector import Point
 
@@ -77,3 +77,16 @@ class Face:
                 assert e.faces[0] is not e.faces[1]
                 adj_faces.append(e.faces[0])
         return adj_faces
+
+    def alpha_quality_measure(self):
+        """
+        Daniel S.H.Lo Finite element mesh generation 2015 p.334
+        """
+        assert len(self.edges) == 3
+        e1 = edge_to_vector(self.edges[0])
+        e2 = edge_to_vector(self.edges[1])
+        e3 = edge_to_vector(self.edges[2])
+        l1 = e1.norm()
+        l2 = e2.norm()
+        l3 = e3.norm()
+        return (4 * (3 ** 0.5) * self.area()) / (l1 ** 2 + l2 ** 2 + l3 ** 2)

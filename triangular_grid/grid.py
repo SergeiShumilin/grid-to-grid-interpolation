@@ -2,7 +2,7 @@
 from .node import Node
 from .face import Face
 from .zone import Zone
-import numpy as np
+from numpy import array, inf, zeros
 from algorithms.avl_tree import AVLTree
 
 
@@ -18,6 +18,7 @@ class Grid:
         self.Nodes = list()
         self.Zones = list()
         self.avl = AVLTree()
+        self.number_of_border_nodes = 0
 
     def init_zone(self):
         """
@@ -89,8 +90,10 @@ class Grid:
 
         Fills all faces' values with face's id.
         """
+        j = 0
         for x, y, z in zip(x, y, z):
-            self.Nodes.append(Node(x, y, z))
+            self.Nodes.append(Node(x, y, z, j))
+            j += 1
 
         i = 0
         for nids in triangles:
@@ -123,15 +126,15 @@ class Grid:
             f.T = (f.nodes[0].T + f.nodes[1].T + f.nodes[2].T) / 3.0
             f.Hw = (f.nodes[0].Hw + f.nodes[1].Hw + f.nodes[2].Hw) / 3.0
 
-    def values_from_nodes_to_array(self) -> np.array:
+    def values_from_nodes_to_array(self) -> array:
         """Return nodes' values as an array."""
         res = list()
         for n in self.Nodes:
             res.append(n.value)
 
-        return np.array(res)
+        return array(res)
 
-    def return_coordinates_as_a_ndim_array(self) -> np.array:
+    def return_coordinates_as_a_ndim_array(self) -> array:
         """Return (n_points, 3) array of coordinates of nodes."""
         x, y, z = list(), list(), list()
 
@@ -140,9 +143,9 @@ class Grid:
             y.append(n.y)
             z.append(n.z)
 
-        return np.array([x, y, z]).T
+        return array([x, y, z]).T
 
-    def return_aux_nodes_as_a_ndim_array(self) -> np.array:
+    def return_aux_nodes_as_a_ndim_array(self) -> array:
         """Return (n_points, 3) array of coordinates of nodes."""
         x, y, z = list(), list(), list()
 
@@ -151,7 +154,7 @@ class Grid:
             y.append(f.aux_node.y)
             z.append(f.aux_node.z)
 
-        return np.array([x, y, z]).T
+        return array([x, y, z]).T
 
     def make_avl(self):
         """Compose an avl tree that contains references to nodes and allows to logn search."""
@@ -208,7 +211,7 @@ class Grid:
                 values_in_auxes.append(f.T)
             if parameter == 'Hw':
                 values_in_auxes.append(f.Hw)
-        return np.array(values_in_auxes).reshape((len(values_in_auxes), 1))
+        return array(values_in_auxes).reshape((len(values_in_auxes), 1))
 
     def set_aux_nodes_parameters(self, interpolated_parameters, parameter='T'):
         assert interpolated_parameters.shape[0] == 1, 'Wrong array dimensions'
@@ -247,3 +250,18 @@ class Grid:
             if start_node is None:
                 return i - 1
             self.depth_first_traversal(start_node, i)
+
+    def mean_alpha_quality_measure(self):
+        assert len(self.Faces) > 0
+        mean_alpha_quality_measure = 1
+        min_alpha_quality_measure = inf
+        for f in self.Faces:
+            aqm = f.alpha_quality_measure()
+            mean_alpha_quality_measure *= aqm
+            if aqm < min_alpha_quality_measure:
+                min_alpha_quality_measure = aqm
+        print('mean alpha: {}\nmin alpha: {}'.format(mean_alpha_quality_measure ** (1 / len(self.Faces)),
+                                                     min_alpha_quality_measure))
+
+    def init_adjacent_faces_list_for_border_nodes(self):
+        self.adj_list_for_border_nodes = zeros((len(self.Nodes), len(self.Faces)))

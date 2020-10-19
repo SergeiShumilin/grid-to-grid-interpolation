@@ -64,6 +64,8 @@ def read_tecplot(grid, filename):
             set_faces(grid, n, f)
             grid.Faces += f
 
+        grid.init_adjacent_faces_list_for_border_nodes()
+
 
 def set_faces(grid, nodes, faces):
     """
@@ -154,6 +156,7 @@ def parce_nodes_and_faces(lines):
     nodes = list()
 
     # Initialize node array for zone 1.
+    i = 1
     for x, y, z in zip(xs, ys, zs):
         if x is None:
             continue
@@ -165,14 +168,18 @@ def parce_nodes_and_faces(lines):
         n.x = x
         n.y = y
         n.z = z
+        n.Id = i
+        i += 1
         nodes.append(n)
 
     del xs, ys, zs
 
     faces = list()
 
+    j = 0
     for line in lines[NUMBER_OF_VARIABLES:]:
-        f = Face()
+        f = Face(j)
+        j += 1
         ids = line.split(' ')
         if len(ids) > 3:
             ids = ids[:-1]

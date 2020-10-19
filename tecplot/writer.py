@@ -12,7 +12,7 @@ def write_tecplot(grid, filename):
     And the ids of faces from triangular_grid.Faces instead of zone.Faces.
     I.e. continuing numbering through the triangular_grid.
     """
-    write_tecplot_header(filename)
+    write_tecplot_header(filename, grid)
     write_zones(grid, filename)
 
 
@@ -28,14 +28,14 @@ def write_zones(grid, filename):
     :param filename: file to plot zones in.
     """
     for i, z in enumerate(grid.Zones):
-        write_zone_header(filename, 'ZONE {}'.format(i + 1), z.Nodes, z.Faces)
+        write_zone_header(filename, 'ZONE {}'.format(i + 1), z.Nodes, z.Faces, grid)
 
-        write_variables(filename, z.Nodes, z.Faces)
+        write_variables(filename, z.Nodes, z.Faces, grid)
 
         write_connectivity_list(filename, z.Faces)
 
 
-def write_tecplot_header(filename):
+def write_tecplot_header(filename, grid):
     """
     Write tecplot header containing the information
     about Title and number of variables.
@@ -45,10 +45,15 @@ def write_tecplot_header(filename):
     with open(filename, 'w') as f:
         f.write('# EXPORT MODE: CHECK_POINT\n')
         f.write('TITLE = "GRID"\n')
-        f.write('VARIABLES = "X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ"\n')
+        f.write('VARIABLES = "X", "Y", "Z", "T", "Hw", "Hi", "HTC", "Beta", "TauX", "TauY", "TauZ", "Alpha", ')
+        for i, n in enumerate(grid.Nodes):
+            if not n.fixed:
+                continue
+            f.write('"N{}", '.format(i + 1))
+        f.write('\n')
 
 
-def write_zone_header(filename, zone_name, nodes, faces):
+def write_zone_header(filename, zone_name, nodes, faces, grid):
     """
     Write information about zone into the file.
 
@@ -63,10 +68,10 @@ def write_zone_header(filename, zone_name, nodes, faces):
         f.write('ELEMENTS={}\n'.format((len(faces))))
         f.write('DATAPACKING=BLOCK\n')
         f.write('ZONETYPE=FETRIANGLE\n')
-        f.write('VARLOCATION=([4-11]=CELLCENTERED)\n')
+        f.write('VARLOCATION=([4-{}]=CELLCENTERED)\n'.format(grid.number_of_border_nodes + 12))
 
 
-def write_variables(filename, nodes, faces):
+def write_variables(filename, nodes, faces, grid):
     """
     Write variables values in tecplot file.
 
@@ -118,6 +123,18 @@ def write_variables(filename, nodes, faces):
         for face in faces:
             f.write(str(face.TauZ) + ' ')
         f.write('\n')
+
+        for face in faces:
+            f.write(str(face.alpha_quality_measure()) + ' ')
+        f.write('\n')
+
+        for n in grid.Nodes:
+            if not n.fixed:
+                continue
+            for af in grid.adj_list_for_border_nodes[n.Id - 1, :]:
+                assert af == 0 or af == 1
+                f.write(str(af) + ' ')
+            f.write('\n')
 
 
 def write_connectivity_list(filename, faces):

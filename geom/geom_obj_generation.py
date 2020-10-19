@@ -3,7 +3,7 @@
 from tecplot import writer
 from matplotlib.tri import Triangulation
 import matplotlib.pyplot as plt
-from numpy import linspace, meshgrid, sin, cos, pi, logspace, zeros
+from numpy import linspace, meshgrid, sin, cos, pi, logspace, zeros, arccos, arcsin, sqrt, isnan
 from triangular_grid.edge import Edge
 from triangular_grid.grid import Grid
 
@@ -93,6 +93,7 @@ def create_half_cylinder(m=3, n=5, filename='half_cylinder', create_dat=True, pl
     mgrid = Grid()
     mgrid.set_nodes_and_faces(x, y, z, delaunuy.triangles)
     set_faces(mgrid, mgrid.Nodes, mgrid.Faces)
+    mgrid.init_adjacent_faces_list_for_border_nodes()
 
     if plot_pyplot:
         fig = plt.figure()
@@ -145,7 +146,7 @@ def create_plane(n, m, filename='plane', create_dat=True, plot_pyplot=False, nod
 
     delaunuy = Triangulation(u.flatten(), v.flatten())
 
-    z = sin(u + v)
+    z = zeros(u.shape)
 
     x = u.flatten()
     y = v.flatten()
@@ -154,6 +155,77 @@ def create_plane(n, m, filename='plane', create_dat=True, plot_pyplot=False, nod
     mgrid = Grid()
     mgrid.set_nodes_and_faces(x, y, z, delaunuy.triangles)
     set_faces(mgrid, mgrid.Nodes, mgrid.Faces)
+    mgrid.init_adjacent_faces_list_for_border_nodes()
+
+    if plot_pyplot:
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax.plot_trisurf(x, y, z, triangles=delaunuy.triangles)
+        plt.show()
+
+    if create_dat:
+        if not filename.endswith('.dat'):
+            filename += '.dat'
+        writer.write_tecplot(mgrid, filename)
+
+    assert len(mgrid.Edges) < 3 * len(mgrid.Nodes) - 3, 'Wrong number of edges'
+    assert len(mgrid.Faces) < 2 * len(mgrid.Nodes) - 2, 'Wrong number of faces'
+
+    return mgrid
+
+
+def create_circle(n, m, filename='plane', create_dat=True, plot_pyplot=False, nodes_distribution='uniform'):
+    """Returns Grid object representing plain.
+    #todo When n=4, m=4, something ruins
+    Args:
+        m:
+          Number of points along x axis.
+        n:
+          Number of point along y axis.
+        filename:
+          Name of the TECPLOT (.dat) file to write in.
+          Only works if create_dat = True (default).
+        create_dat:
+          Crate TECPLOT (.dat) file. Default True.
+        plot_pyplot:
+          Plot pyplot view of the grid.
+        nodes_distribution:
+          distribution of points along x axis
+            uniform:
+            logarithmic:
+
+    Returns:
+        Grid object
+    """
+    u = linspace(-1, 1, m, endpoint=True)
+
+    v = linspace(-1, 1, n, endpoint=True)
+
+    u, v = meshgrid(u, v)
+
+    coss = []
+    sins = []
+    for _u, _v in zip(u.flatten(), v.flatten()):
+        hip = sqrt(_u ** 2 + _v ** 2)
+        if hip == 0:
+            coss.append(0)
+            sins.append(0)
+            continue
+        coss.append(_u / hip)
+        sins.append(_v / hip)
+
+    delaunuy = Triangulation(coss, sins)
+
+    z = zeros(u.shape)
+
+    x = coss
+    y = sins
+    z = z.flatten()
+
+    mgrid = Grid()
+    mgrid.set_nodes_and_faces(x, y, z, delaunuy.triangles)
+    set_faces(mgrid, mgrid.Nodes, mgrid.Faces)
+    mgrid.init_adjacent_faces_list_for_border_nodes()
 
     if plot_pyplot:
         fig = plt.figure()
