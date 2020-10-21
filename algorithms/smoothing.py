@@ -1,6 +1,6 @@
 from geom.basics import *
 from scipy.linalg import eig, det
-from numpy import argmax, array, vstack, diag, dot, abs, cumprod, sum, zeros, full
+from numpy import argmax, array, vstack, diag, dot, abs, cumprod, sum, zeros, full, isnan
 from geom.vector import Vector
 from tecplot import writer
 from triangular_grid.grid import Grid
@@ -76,7 +76,6 @@ class Smoothing:
 
         return False, border_edges
 
-
     def border_edge_to_project_on(self, n, shift_vector):
         is_fixed, border_edges = self.is_node_fixed(n)
 
@@ -110,8 +109,8 @@ class Smoothing:
 
     def write_grid_and_print_info(self, iteration):
         print('{}th iteration of {} smoothing'.format(iteration, self.__name__))
-        writer.write_tecplot(self.grid, '{}_smoothing_{}.dat'.format(self.__name__,
-                                                                     self.name_of_iteration(iteration)))
+        writer.write_tecplot(self.grid, '{}_ORIGsmoothing_{}.dat'.format(self.__name__,
+                                                                         self.name_of_iteration(iteration)))
 
     def mark_all_fixed_nodes(self):
         for e in self.grid.Edges:
@@ -260,13 +259,13 @@ class NullSpaceSmoothing(Smoothing):
                     q.append(adjacent_face)
                     neighbours.append(adjacent_face)
 
-        #assert len(neighbours) == n_neighbours, 'unable to find n neighbours for local interpolation for border nodes'
+        # assert len(neighbours) == n_neighbours, 'unable to find n neighbours for local interpolation for border nodes'
 
         return neighbours
 
     def set_weight_for_face(self, node, face, centroid):
         if not node.fixed:
-            return face.area()
+            return 1.0
         is_fixed, border_edges = Smoothing.is_node_fixed(node)
         assert len(border_edges) == 2
         if is_fixed:
@@ -289,7 +288,7 @@ class NullSpaceSmoothing(Smoothing):
 
         # turn off condition len(node.faces) % 2 != 0 for a second
         if node.fixed:
-            neighbours = self.find_n_neighbours_faces_of_node(node, len(node.faces))
+            neighbours = self.find_n_neighbours_faces_of_node(node, n_neighbours)
         else:
             neighbours = node.faces
 
@@ -327,7 +326,6 @@ class NullSpaceSmoothing(Smoothing):
                 W = diag(w)
                 NTW = dot(N.T, W)
                 A = dot(NTW, N)
-
                 assert W.shape == (m, m)
                 assert NTW.shape == (3, m)
                 assert A.shape == (3, 3)

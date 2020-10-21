@@ -34,6 +34,8 @@ class Vector:
         self.z -= other.z
 
     def dev(self, k):
+        if k == 0:
+            raise ZeroDivisionError
         self.mul(1 / k)
 
     def make_unit(self):
@@ -44,6 +46,9 @@ class Vector:
         self.x *= k
         self.y *= k
         self.z *= k
+
+    def __str__(self):
+        return '(' + str(self.x) + ', ' + str(self.y) + ', ' + str(self.z) + ')'
 
     @staticmethod
     def subtract_vectors(v1, v2):
