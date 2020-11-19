@@ -13,12 +13,12 @@ DETERMINANT_ACCURACY = 10e-5
 class Smoothing:
     __name__ = ''
 
-    def __init__(self, grid, num_interations=20, node_fixation_method=None):
+    def __init__(self, grid, num_interations=20, node_fixation_method=None, fix_corner_nodes=False):
         self.grid = grid
         self.num_iterations = num_interations
         assert node_fixation_method in [None, 'no_move', 'along_edge']
         self.node_fixation_method = node_fixation_method
-
+        self.fix_corner_nodes = fix_corner_nodes
         if self.node_fixation_method is not None:
             self.mark_all_fixed_nodes()
 
@@ -79,7 +79,7 @@ class Smoothing:
     def border_edge_to_project_on(self, n, shift_vector):
         is_fixed, border_edges = self.is_node_fixed(n)
 
-        if is_fixed:
+        if self.fix_corner_nodes and is_fixed:
             return Vector(0, 0, 0)
 
         dot_products_between_edges_and_shift = [dot_product(edge_to_vector(e), shift_vector) for e in border_edges]
@@ -205,14 +205,15 @@ class NullSpaceSmoothing(Smoothing):
     __name__ = "NullSpace"
 
     def __init__(self, grid: Grid, num_iterations=20, st=0.2, epsilon=10e-3, n_neighbours_for_border_nodes=None,
-                 node_fixation_method=None):
+                 node_fixation_method=None, weight_faces_by_angle=False, fix_corner_nodes=False):
         assert len(grid.Nodes) > 0, 'the grid is empty'
         assert len(grid.Faces) > 0, 'the grid is empty'
         assert len(grid.Edges) > 0, 'the grid is empty'
         self.st = st
         self.epsilon = epsilon
         self.n_neighbours_for_border_nodes = n_neighbours_for_border_nodes
-        Smoothing.__init__(self, grid, num_iterations, node_fixation_method)
+        self.weight_faces_by_angle = weight_faces_by_angle
+        Smoothing.__init__(self, grid, num_iterations, node_fixation_method, fix_corner_nodes)
 
     @staticmethod
     def print_info(node, eigenValues, nullspace, k):
@@ -268,7 +269,7 @@ class NullSpaceSmoothing(Smoothing):
             return 1.0
         is_fixed, border_edges = Smoothing.is_node_fixed(node)
         assert len(border_edges) == 2
-        if is_fixed:
+        if not is_fixed:
             # any of border edges
             edge_to_compare_with = border_edges[0]
             edge_to_compare_with = edge_to_vector(edge_to_compare_with)
@@ -297,11 +298,14 @@ class NullSpaceSmoothing(Smoothing):
 
         for f in neighbours:
             self.grid.adj_list_for_border_nodes[node.Id - 1, f.Id] = 1
-
-        for f in neighbours:
             c = point_to_vector(f.centroid())
             c.sub(p)
-            weight = self.set_weight_for_face(node, f, c)
+
+            if self.weight_faces_by_angle:
+                weight = self.set_weight_for_face(node, f, c)
+            else:
+                weight = 1.0
+
             assert isinstance(c, Vector)
             assert isinstance(weight, float)
             c.mul(weight)
@@ -310,13 +314,34 @@ class NullSpaceSmoothing(Smoothing):
         dv.dev(weights)
         return dv
 
+    def laplacian(self, node):
+        neighbours = []
+        assert len(node.edges) > 1
+        for e in node.edges:
+            assert len(e.nodes) == 2
+            n1 = e.nodes[0]
+            n2 = e.nodes[1]
+            if n1 == node:
+                neighbours.append(n2)
+            else:
+                neighbours.append(n1)
+
+        laplacian = Vector()
+        for neighbour_node in neighbours:
+            laplacian.sum(point_to_vector(neighbour_node.as_point()))
+        laplacian.dev(len(neighbours))
+        laplacian.sub(point_to_vector(node.as_point()))
+        return laplacian
+
     def smoothing(self):
-        for i in range(self.num_iterations):
+        Smoothing.write_grid_and_print_info(self, 0)
+        for i in range(1, self.num_iterations):
             laplacians = []
             for n in self.grid.Nodes:
                 m = len(n.faces)
                 w = [f.area() for f in n.faces]
                 N = self.create_matrix_of_normals(n)
+
                 dv = self.vector_to_avg_of_centroids(n, self.n_neighbours_for_border_nodes)
 
                 assert N.shape == (m, 3)
