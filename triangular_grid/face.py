@@ -43,6 +43,7 @@ class Face:
         vr = cross_product(vf, vs)
         vr.make_unit()
         assert isinstance(vr, Vector)
+        vr.mul(-1)
         return vr
 
     def area(self):
