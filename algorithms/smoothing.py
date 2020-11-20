@@ -1,6 +1,6 @@
 from geom.basics import *
 from scipy.linalg import eig, det
-from numpy import argmax, array, vstack, diag, dot, abs, cumprod, sum, zeros, full, isnan
+from numpy import argmax, array, vstack, diag, dot, abs, cumprod, sum, zeros, full, isnan, arccos, argmin, exp
 from geom.vector import Vector
 from tecplot import writer
 from triangular_grid.grid import Grid
@@ -359,3 +359,95 @@ class NullSpaceSmoothing(Smoothing):
 
             Smoothing.apply_laplacians(self, laplacians)
             Smoothing.write_grid_and_print_info(self, i)
+
+
+class FuzzyVectorMedian(Smoothing):
+    __name__ = "FuzzyVectorMedian"
+
+    def __init__(self, grid: Grid, num_iterations=20, node_fixation_method=None):
+        assert len(grid.Nodes) > 0, 'the grid is empty'
+        assert len(grid.Faces) > 0, 'the grid is empty'
+        assert len(grid.Edges) > 0, 'the grid is empty'
+
+        Smoothing.__init__(self, grid, num_iterations, node_fixation_method)
+
+    def gaussian_membership_function(self, u, v, eps=0.4):
+        return exp(((-self.distance(u, v))**2) / (2 * eps))
+
+    def distance(self, u, v):
+        assert isinstance(u, Vector)
+        assert isinstance(v, Vector)
+        return arccos(dot_product(u, v))
+
+    def fuzzy_vector_medians(self):
+        for f in self.grid.Faces:
+            incident_faces = self.incident_faces(f)
+            VM = f.VM
+            for iface in incident_faces:
+                R = self.gaussian_membership_function(iface.VM, VM)
+                pass
+
+
+    def incident_faces(self, f):
+        """Finds incident faces to the face f
+
+        Attributes
+        ==========
+        f : Face
+            face to work with
+
+        Returns
+        =======
+        set of incident faces
+        """
+        incident_faces = set()
+        incident_faces.add(f)
+        for e in f.edges:
+            incident_faces.add(e.faces[0])
+
+            if len(e.faces) > 1:
+                incident_faces.add(e.faces[1])
+
+        assert len(incident_faces) <= 4
+
+        return incident_faces
+
+    def define_fvs(self):
+        """Define Fuzzy Vector  for each face.
+
+        It uses the quadratic algorithm but the amount of neighbouring faces
+        is usually small enough to not care.
+        """
+        for f in self.grid.Faces:
+            incident_faces = self.incident_faces(f)
+            angles_between = {}
+            for iface in incident_faces:
+                sum = 0
+                normal = iface.normal()
+                for iface2 in incident_faces:
+                    normal2 = iface2.normal()
+                    sum += self.distance(normal, normal2)
+                angles_between[iface] = sum
+
+            min_face = list({k: v for k, v in sorted(angles_between.items(),
+                                                     key=lambda item: item[1])}.keys())[0]
+
+            fuzzy_vector = min_face.normal()
+
+            assert isinstance(fuzzy_vector, Vector)
+
+            f.VM = fuzzy_vector
+
+    def smoothing(self):
+        """Performs smoothing using FVM."""
+        for i in range(self.num_iterations):
+
+            self.define_fvs()
+
+            laplacians=[]
+            for n in self.grid.Nodes:
+                laplacians.append(Vector(0, 0, 0))
+
+            Smoothing.apply_laplacians(self, laplacians)
+            Smoothing.write_grid_and_print_info(self, i)
+
