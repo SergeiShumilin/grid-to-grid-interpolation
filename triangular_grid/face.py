@@ -29,8 +29,8 @@ class Face:
         self.TauY = None
         self.TauZ = None
         self.aux_node = Node()
-        self.VM = None
-        self.FM = None
+        self.vector_median = None
+        self.fuzzy_median = None
 
     def normal(self):
         assert len(self.nodes) == 3, 'Wrong number of nodes in the face'
