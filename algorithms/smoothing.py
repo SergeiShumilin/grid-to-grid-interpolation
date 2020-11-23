@@ -390,7 +390,7 @@ class NullSpaceSmoothing(Smoothing):
 class FuzzyVectorMedian(Smoothing):
     __name__ = "FuzzyVectorMedian"
 
-    def __init__(self, grid: Grid, num_iterations=20, node_fixation_method=None, lambd=0.2):
+    def __init__(self, grid: Grid, num_iterations=20, node_fixation_method=None, lambd=0.05):
         assert len(grid.Nodes) > 0, 'the grid is empty'
         assert len(grid.Faces) > 0, 'the grid is empty'
         assert len(grid.Edges) > 0, 'the grid is empty'
@@ -398,7 +398,7 @@ class FuzzyVectorMedian(Smoothing):
         self.lambd = lambd
         Smoothing.__init__(self, grid, num_iterations, node_fixation_method)
 
-    def gaussian_membership_function(self, u, v, eps=0.4):
+    def gaussian_membership_function(self, u, v, sigma=0.1):
         """
         Calculates gaussian membership function.
 
@@ -414,7 +414,7 @@ class FuzzyVectorMedian(Smoothing):
         ==========
         Formula 8 Shen and Barner,  Fuzzy Vector Median-Based Surface Smoothing.
         """
-        return exp(((-self.distance(u, v))**2) / (2 * (eps ** 2)))
+        return exp(-1 * ((self.distance(u, v))**2) / (2 * (sigma ** 2)))
 
     def distance(self, u, v):
         """Calculates the angle between two unit vectors."""
@@ -441,14 +441,12 @@ class FuzzyVectorMedian(Smoothing):
             sum_r = 0
             res = Vector()
             for iface in incident_faces:
-                R = self.gaussian_membership_function(iface.vector_median, VM)
+                R = self.gaussian_membership_function(iface.normal(), VM)
                 assert isinstance(R, float)
                 sum_r += R
-                aux_vector = deepcopy(iface.vector_median)
+                aux_vector = iface.normal()
                 aux_vector.mul(R)
                 res.sum(aux_vector)
-                if iface == f:
-                    assert abs(R - 1.0) < EPSILON, print(R)
 
             res.dev(sum_r)
 
@@ -503,11 +501,7 @@ class FuzzyVectorMedian(Smoothing):
             min_face = list({k: v for k, v in sorted(angles_between.items(),
                                                      key=lambda item: item[1])}.keys())[0]
 
-            vector_median = min_face.normal()
-
-            assert isinstance(vector_median, Vector)
-
-            f.vector_median = vector_median
+            f.vector_median = min_face.normal()
 
     def incident_nodes(self, n):
         incident_nodes = set()
@@ -543,16 +537,20 @@ class FuzzyVectorMedian(Smoothing):
 
                     assert 0 < len(e.faces) < 3
 
-                    aux_node = Vector()
+                    aux_vector = Vector()
                     for f in e.faces:
                         assert f.fuzzy_median is not None
-                        diff = Vector.subtract_vectors(point_to_vector(i), point_to_vector(j))
+                        diff = Vector.subtract_vectors(point_to_vector(j), point_to_vector(i))
 
                         dot = dot_product(f.fuzzy_median, diff)
-                        f.fuzzy_median.mul(dot)
-                        aux_node.sum(f.fuzzy_median)
+                        fm = deepcopy(f.fuzzy_median)
 
-                    laplacian.sum(aux_node)
+                        assert abs(fm.norm() - 1.0) < EPSILON, print(fm.norm())
+
+                        fm.mul(dot)
+                        aux_vector.sum(fm)
+
+                    laplacian.sum(aux_vector)
 
                 laplacian.mul(self.lambd)
                 laplacians.append(laplacian)
