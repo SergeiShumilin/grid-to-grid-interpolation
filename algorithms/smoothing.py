@@ -8,7 +8,7 @@ from copy import deepcopy
 from collections import deque
 
 DETERMINANT_ACCURACY = 10e-5
-EPSILON = 10e-7
+EPSILON = 10e-5
 
 
 class Smoothing:
@@ -37,7 +37,7 @@ class Smoothing:
         border_edges = [e for e in n.edges if e.border]
         assert len(border_edges) == 2, print('Wrong number of border edges', len(border_edges))
 
-        alpha = 0.2
+        alpha = 0.01
         be1_v = border_edges[0]
         be2_v = border_edges[1]
         # make vectors directed in different sides.
@@ -110,7 +110,7 @@ class Smoothing:
 
     def write_grid_and_print_info(self, iteration):
         print('{}th iteration of {} smoothing'.format(iteration, self.__name__))
-        writer.write_tecplot(self.grid, '{}_ORIGsmoothing_{}.dat'.format(self.__name__,
+        writer.write_tecplot(self.grid, '{}_smoothing_{}.dat'.format(self.__name__,
                                                                          self.name_of_iteration(iteration)))
 
     def mark_all_fixed_nodes(self):
@@ -203,7 +203,7 @@ class TaubinSmoothing(Smoothing):
 
 
 class NullSpaceSmoothing(Smoothing):
-    __name__ = "NullSpace"
+    __name__ = "NullSpace2"
 
     def __init__(self, grid: Grid, num_iterations=20, st=0.2, epsilon=10e-3, n_neighbours_for_border_nodes=None,
                  node_fixation_method=None, weight_faces_by_angle=False, fix_corner_nodes=False):
@@ -298,7 +298,7 @@ class NullSpaceSmoothing(Smoothing):
         assert isinstance(node.Id, int)
 
         for f in neighbours:
-            self.grid.adj_list_for_border_nodes[node.Id - 1, f.Id] = 1
+            #self.grid.adj_list_for_border_nodes[node.Id - 1, f.Id] = 1
             c = point_to_vector(f.centroid())
             c.sub(p)
 
@@ -338,6 +338,7 @@ class NullSpaceSmoothing(Smoothing):
         Smoothing.write_grid_and_print_info(self, 0)
         for i in range(1, self.num_iterations):
             laplacians = []
+            fazzians = []
             for n in self.grid.Nodes:
                 m = len(n.faces)
                 w = [f.area() for f in n.faces]
@@ -374,7 +375,7 @@ class NullSpaceSmoothing(Smoothing):
                 if k < 3:
                     ttT = dot(ns, ns.T)
                     if n.fixed:
-                        t = 0.2 * self.st * dot(ttT, dv)
+                        t = self.st * dot(ttT, dv)
                     else:
                         t = self.st * dot(ttT, dv)
                     assert t.shape == (3, 1), 'Wrong shift shape'
@@ -384,13 +385,16 @@ class NullSpaceSmoothing(Smoothing):
                 laplacians.append(laplacian)
 
             Smoothing.apply_laplacians(self, laplacians)
+
+            FuzzyVectorMedian(self.grid).smoothing()
+
             Smoothing.write_grid_and_print_info(self, i)
 
 
 class FuzzyVectorMedian(Smoothing):
     __name__ = "FuzzyVectorMedian"
 
-    def __init__(self, grid: Grid, num_iterations=20, node_fixation_method=None, lambd=0.05):
+    def __init__(self, grid: Grid, num_iterations=5, node_fixation_method=None, lambd=0.05):
         assert len(grid.Nodes) > 0, 'the grid is empty'
         assert len(grid.Faces) > 0, 'the grid is empty'
         assert len(grid.Edges) > 0, 'the grid is empty'
@@ -429,33 +433,36 @@ class FuzzyVectorMedian(Smoothing):
 
         return arccos(dotp)
 
-    def fuzzy_vector_medians(self):
+    def fuzzy_vector_medians(self, iterations=1):
         """Calculates the fuzzy vector median of all faces in the grid.
 
         Calculation is based on the formula 10 from
         Shen and Barner,  Fuzzy Vector Median-Based Surface Smoothing.
         """
-        for f in self.grid.Faces:
-            incident_faces = self.incident_faces(f)
-            VM = f.vector_median
-            sum_r = 0
-            res = Vector()
-            for iface in incident_faces:
-                R = self.gaussian_membership_function(iface.normal(), VM)
-                assert isinstance(R, float)
-                sum_r += R
-                aux_vector = iface.normal()
-                aux_vector.mul(R)
-                res.sum(aux_vector)
+        for i in range(iterations):
+            for f in self.grid.Faces:
+                incident_faces = self.incident_faces(f)
+                VM = f.vector_median
+                sum_r = 0
+                res = Vector()
+                for iface in incident_faces:
+                    R = self.gaussian_membership_function(iface.fuzzy_median, VM)
+                    assert isinstance(R, float)
+                    sum_r += R
+                    aux_vector = deepcopy(iface.fuzzy_median)
+                    aux_vector.mul(R)
+                    res.sum(aux_vector)
 
-            res.dev(sum_r)
+                res.dev(sum_r)
 
-            if res.norm() is not 0.0:
-                res.make_unit()
-            else:
-                res = deepcopy(VM)
+                if res.norm() is not 0.0:
+                    res.make_unit()
+                else:
+                    res = deepcopy(VM)
 
-            f.fuzzy_median = res
+                assert abs(res.norm() - 1.0) < EPSILON, print(res.norm())
+
+                f.fuzzy_median = res
 
     def incident_faces(self, f):
         """Finds incident faces to the face f
@@ -471,13 +478,13 @@ class FuzzyVectorMedian(Smoothing):
         """
         incident_faces = set()
         incident_faces.add(f)
-        for e in f.edges:
+        for e in f.nodes:
             incident_faces.add(e.faces[0])
 
             if len(e.faces) > 1:
                 incident_faces.add(e.faces[1])
 
-        assert len(incident_faces) <= 4
+        #assert len(incident_faces) <= 4
 
         return incident_faces
 
@@ -503,17 +510,12 @@ class FuzzyVectorMedian(Smoothing):
 
             f.vector_median = min_face.normal()
 
-    def incident_nodes(self, n):
-        incident_nodes = set()
-        for e in n.edges:
-            assert len(e.nodes) == 2
-            incident_nodes.add(e.nodes[0])
-            incident_nodes.add(e.nodes[1])
-        return incident_nodes
-
     def smoothing(self):
         """Performs smoothing using FVM."""
         for it in range(self.num_iterations):
+
+            for f in self.grid.Faces:
+                f.fuzzy_median = f.normal()
 
             self.define_fvs()
             self.fuzzy_vector_medians()
@@ -521,40 +523,40 @@ class FuzzyVectorMedian(Smoothing):
             laplacians=[]
             for n in self.grid.Nodes:
                 laplacian = Vector()
-                for e in n.edges:
-                    i = e.nodes[0]
-                    j = e.nodes[1]
+                if n.fixed:
+                    for e in n.edges:
+                        i = e.nodes[0]
+                        j = e.nodes[1]
 
-                    if i == n:
-                        pass
-                    else:
-                        assert j == n
-                        j = e.nodes[0]
-                        i = e.nodes[1]
+                        if i == n:
+                            pass
+                        else:
+                            assert j == n
+                            j = e.nodes[0]
+                            i = e.nodes[1]
 
-                    i = i.as_point()
-                    j = j.as_point()
+                        i = i.as_point()
+                        j = j.as_point()
 
-                    assert 0 < len(e.faces) < 3
+                        assert 0 < len(e.faces) < 3
 
-                    aux_vector = Vector()
-                    for f in e.faces:
-                        assert f.fuzzy_median is not None
-                        diff = Vector.subtract_vectors(point_to_vector(j), point_to_vector(i))
+                        aux_vector = Vector()
+                        for f in e.faces:
+                            assert f.fuzzy_median is not None
+                            diff = Vector.subtract_vectors(point_to_vector(j), point_to_vector(i))
 
-                        dot = dot_product(f.fuzzy_median, diff)
-                        fm = deepcopy(f.fuzzy_median)
+                            dot = dot_product(f.fuzzy_median, diff)
+                            fm = deepcopy(f.fuzzy_median)
 
-                        assert abs(fm.norm() - 1.0) < EPSILON, print(fm.norm())
+                            assert abs(fm.norm() - 1.0) < EPSILON, print(fm.norm())
 
-                        fm.mul(dot)
-                        aux_vector.sum(fm)
+                            fm.mul(dot)
+                            aux_vector.sum(fm)
 
-                    laplacian.sum(aux_vector)
+                        laplacian.sum(aux_vector)
 
-                laplacian.mul(self.lambd)
+                    laplacian.mul(self.lambd)
                 laplacians.append(laplacian)
 
             Smoothing.apply_laplacians(self, laplacians)
             Smoothing.write_grid_and_print_info(self, it)
-
