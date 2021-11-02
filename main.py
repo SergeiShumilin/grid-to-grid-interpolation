@@ -1,7 +1,7 @@
 import argparse
 from os.path import isfile
 from triangular_grid import grid
-from tecplot import reader, writer
+from tecplot.io import read_tecplot, write_tecplot
 from algorithms.methods import *
 from time import time
 
@@ -23,8 +23,8 @@ def check_argument(name):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('old_grid', help='old grid .dat file')
-parser.add_argument('new_grid', help='new grid .dat file')
+parser.add_argument('source', help='old grid .dat file to interpolate from')
+parser.add_argument('target', help='new grid .dat file to interpolate to')
 parser.add_argument('-res', '--result_grid', help='interpolated grid. if not provided than the name of the '
                                                   'result file is \"new_grid\" + \"_interpolated\"')
 parser.add_argument("-v", "--verbosity", action="count",
@@ -32,8 +32,8 @@ parser.add_argument("-v", "--verbosity", action="count",
 parser.add_argument('-m', '--method', help='method of interpolation', choices=methods.keys(), default='cell_centered')
 args = parser.parse_args()
 
-old_grid = args.old_grid
-new_grid = args.new_grid
+old_grid = args.source
+new_grid = args.target
 result_grid = args.result_grid
 
 check_argument(old_grid)
@@ -46,12 +46,12 @@ if result_grid:
 start = time()
 grid1 = grid.Grid()
 grid2 = grid.Grid()
-reader.read_tecplot(grid1, old_grid)
+read_tecplot(grid1, old_grid)
 
 if args.verbosity > 0:
     print('Old grid read')
 
-reader.read_tecplot(grid2, new_grid)
+read_tecplot(grid2, new_grid)
 
 if args.verbosity > 0:
     print('New grid read')
@@ -61,9 +61,9 @@ if args.verbosity > 0:
     print('Interpolation made')
 
 if args.result_grid:
-    writer.write_tecplot(grid2, result_grid)
+    write_tecplot(grid2, result_grid)
 else:
-    writer.write_tecplot(grid2, new_grid[:-4] + '_interpolated.dat')
+    write_tecplot(grid2, new_grid[:-4] + '_interpolated.dat')
 
 if args.verbosity > 0:
     print('Result grid was written')

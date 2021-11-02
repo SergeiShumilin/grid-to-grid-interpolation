@@ -27,6 +27,7 @@ def face_centered_interpolation(old_grid, new_grid):
     old_grid.compute_aux_nodes()
     new_grid.compute_aux_nodes()
     old_aux_nodes = old_grid.return_aux_nodes_as_a_ndim_array()
+
     kdtree = KDTree(old_aux_nodes)
     for f in new_grid.Faces:
         i = kdtree.query(f.aux_node.coordinates())[1]
